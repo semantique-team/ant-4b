@@ -1,0 +1,6 @@
+DEFAULT_CONTEXT_TEMPLATE = "<STATE>\n{state}\n</STATE>\n<QUESTION>\n{question}\n</QUESTION>"
+DEFAULT_CANDIDATE_TEMPLATE = "<CANDIDATE>\n{candidate}\n</CANDIDATE>"
+
+CONTEXT_JOINT_TEMPLATE = (
+    "<STATE>\n{state}\n</STATE>\n<QUESTION>\n{question}\n</QUESTION>\n<CANDIDATE>\n{candidate}\n</CANDIDATE>"
+)
