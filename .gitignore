@@ -7,10 +7,14 @@ build/
 dist/
 
 models/
-runs/
 checkpoints/
 *.pt
 *.safetensors
+
+# Published ANT head checkpoints live in runs/.  Keep downloaded backbone
+# weights ignored while allowing these lightweight, self-contained artifacts.
+!runs/
+!runs/**
 
 .DS_Store
 hf_cache/

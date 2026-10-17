@@ -1,0 +1,38 @@
+{
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 0.9759820844455246,
+      "seconds": 0.561359167098999,
+      "val_loss": 2.116848624966763,
+      "val_accuracy": 0.3541666666666667
+    },
+    {
+      "epoch": 2,
+      "train_loss": 0.5036395614590954,
+      "seconds": 0.512700080871582,
+      "val_loss": 3.019514216317071,
+      "val_accuracy": 0.3263888888888889
+    },
+    {
+      "epoch": 3,
+      "train_loss": 0.23489523411671256,
+      "seconds": 0.5187129974365234,
+      "val_loss": 3.512371618990545,
+      "val_accuracy": 0.2986111111111111
+    },
+    {
+      "epoch": 4,
+      "train_loss": 0.11711180994206459,
+      "seconds": 0.5232830047607422,
+      "val_loss": 3.7101653597007194,
+      "val_accuracy": 0.29398148148148145
+    }
+  ],
+  "best_epoch": 1,
+  "best_val_loss": 2.116848624966763,
+  "best_val_accuracy": 0.3541666666666667,
+  "trainable_parameters": 4416,
+  "total_parameters": 275008,
+  "checkpoint_path": "runs/mock-multitask"
+}

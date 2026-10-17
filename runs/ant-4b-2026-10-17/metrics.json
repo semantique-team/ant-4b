@@ -1,0 +1,111 @@
+{
+  "test": {
+    "name": "test",
+    "n": 392,
+    "accuracy": 0.7679,
+    "nll": 0.6352,
+    "brier": 0.339,
+    "ece": 0.0697,
+    "entropy_mean": 0.4291,
+    "latency_ms_per_example": null,
+    "peak_vram_mb": null,
+    "extra": {},
+    "by_use_case": {
+      "agent_next_step": {
+        "accuracy": 0.8125,
+        "n": 16
+      },
+      "bug_component": {
+        "accuracy": 0.7,
+        "n": 40
+      },
+      "content_moderation": {
+        "accuracy": 0.4583333333333333,
+        "n": 24
+      },
+      "document_type": {
+        "accuracy": 0.9375,
+        "n": 16
+      },
+      "email_action": {
+        "accuracy": 0.6875,
+        "n": 32
+      },
+      "expense_category": {
+        "accuracy": 0.925,
+        "n": 40
+      },
+      "incident_severity": {
+        "accuracy": 0.71875,
+        "n": 32
+      },
+      "it_helpdesk": {
+        "accuracy": 1.0,
+        "n": 16
+      },
+      "lead_quality": {
+        "accuracy": 1.0,
+        "n": 8
+      },
+      "order_intent": {
+        "accuracy": 0.975,
+        "n": 40
+      },
+      "refund_policy": {
+        "accuracy": 0.20833333333333334,
+        "n": 24
+      },
+      "sentiment": {
+        "accuracy": 0.9583333333333334,
+        "n": 24
+      },
+      "sentiment_it": {
+        "accuracy": 1.0,
+        "n": 8
+      },
+      "support_routing": {
+        "accuracy": 0.7708333333333334,
+        "n": 48
+      },
+      "support_routing_it": {
+        "accuracy": 1.0,
+        "n": 16
+      },
+      "transaction_risk": {
+        "accuracy": 0.0,
+        "n": 8
+      }
+    }
+  },
+  "ood": {
+    "name": "ood",
+    "n": 216,
+    "accuracy": 0.5602,
+    "nll": 1.7048,
+    "brier": 0.704,
+    "ece": 0.2464,
+    "entropy_mean": 0.517,
+    "latency_ms_per_example": null,
+    "peak_vram_mb": null,
+    "extra": {},
+    "by_use_case": {
+      "leave_request": {
+        "accuracy": 0.5,
+        "n": 72
+      },
+      "pr_review": {
+        "accuracy": 0.5694444444444444,
+        "n": 72
+      },
+      "shipping_method": {
+        "accuracy": 0.6111111111111112,
+        "n": 72
+      }
+    }
+  },
+  "training": {
+    "best_epoch": 3,
+    "best_val_loss": 1.2568678282898564,
+    "best_val_accuracy": 0.8078703703703703
+  }
+}

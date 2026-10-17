@@ -30,13 +30,21 @@ def resolve_device(device: str | torch.device | None = "auto") -> torch.device:
     return torch.device(device)
 
 
+def supports_bf16(device: torch.device) -> bool:
+    """Native bf16 needs CUDA compute capability >= 8 (Ampere+); a T4 is 7.5."""
+    return device.type == "cuda" and torch.cuda.get_device_capability(device)[0] >= 8
+
+
 def resolve_dtype(dtype: str | torch.dtype | None, device: torch.device) -> torch.dtype:
-    """BF16 on CUDA; FP32 elsewhere by default (linear-attention ops are not
-    reliably BF16 on MPS/CPU and a 4B model in FP32 on CUDA is wasteful)."""
+    """BF16 on Ampere+ CUDA, FP16 on older CUDA (e.g. T4), FP32 elsewhere by default
+    (linear-attention ops are not reliably BF16 on MPS/CPU and a 4B model in FP32
+    on CUDA is wasteful)."""
     if isinstance(dtype, torch.dtype):
         return dtype
     if dtype in (None, "auto"):
-        return torch.bfloat16 if device.type == "cuda" else torch.float32
+        if device.type == "cuda":
+            return torch.bfloat16 if supports_bf16(device) else torch.float16
+        return torch.float32
     key = str(dtype).lower()
     if key not in _DTYPE_ALIASES:
         raise ValueError(f"unknown dtype {dtype!r}; use auto or one of {sorted(_DTYPE_ALIASES)}")

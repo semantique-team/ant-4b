@@ -79,3 +79,16 @@ def test_trainer_runs_and_checkpoint_roundtrip(model, tmp_path):
     scores_a = model.score_candidates("s", "q", ["a", "b"])
     scores_b = restored.score_candidates("s", "q", ["a", "b"])
     assert torch.allclose(scores_a, scores_b, atol=1e-6)
+
+
+def test_trainer_restores_the_best_epoch(model):
+    """After fit, the in-memory head is the best-validation epoch, not the last one."""
+    torch.manual_seed(0)
+    splits = generate_dataset(n_train=24, n_val=8, n_test=8, n_ood=4)
+    trainer = Trainer(
+        model,
+        TrainingConfig(mode="head_only", epochs=3, batch_size=8, learning_rate=5e-1, log_every=0),
+    )
+    report = trainer.fit(splits.train, splits.val)
+    val_loss, _ = trainer.evaluate(splits.val)
+    assert val_loss == pytest.approx(report.best_val_loss, abs=1e-5)

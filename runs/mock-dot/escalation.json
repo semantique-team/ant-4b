@@ -1,0 +1,14 @@
+{
+  "name": "risk_coverage",
+  "metric": "confidence",
+  "threshold": 0.7777096629142761,
+  "target_coverage": null,
+  "target_risk": 0.1,
+  "stats": {
+    "threshold": 0.7777096629142761,
+    "coverage": 0.26,
+    "risk": 0.07692307692307693,
+    "automation_accuracy": 0.9230769230769231,
+    "n": 100
+  }
+}

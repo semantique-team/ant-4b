@@ -1,0 +1,58 @@
+[
+  {
+    "name": "Frozen + dot",
+    "n": 100,
+    "accuracy": 0.63,
+    "nll": 1.3925,
+    "brier": 0.5765,
+    "ece": 0.1513,
+    "entropy_mean": 1.0203,
+    "latency_ms_per_example": null,
+    "peak_vram_mb": "0",
+    "extra": {},
+    "train_seconds": 2.8,
+    "best_val_acc": 0.71
+  },
+  {
+    "name": "Frozen + cosine",
+    "n": 100,
+    "accuracy": 0.64,
+    "nll": 1.2144,
+    "brier": 0.5577,
+    "ece": 0.1579,
+    "entropy_mean": 1.0547,
+    "latency_ms_per_example": null,
+    "peak_vram_mb": "0",
+    "extra": {},
+    "train_seconds": 0.4,
+    "best_val_acc": 0.63
+  },
+  {
+    "name": "Frozen + bilinear",
+    "n": 100,
+    "accuracy": 0.58,
+    "nll": 1.3658,
+    "brier": 0.6281,
+    "ece": 0.1618,
+    "entropy_mean": 1.1313,
+    "latency_ms_per_example": null,
+    "peak_vram_mb": "0",
+    "extra": {},
+    "train_seconds": 0.5,
+    "best_val_acc": 0.63
+  },
+  {
+    "name": "Frozen + mlp",
+    "n": 100,
+    "accuracy": 0.57,
+    "nll": 1.2979,
+    "brier": 0.6092,
+    "ece": 0.0868,
+    "entropy_mean": 1.1612,
+    "latency_ms_per_example": null,
+    "peak_vram_mb": "0",
+    "extra": {},
+    "train_seconds": 2.5,
+    "best_val_acc": 0.62
+  }
+]

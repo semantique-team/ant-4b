@@ -1,0 +1,61 @@
+{
+  "train": {
+    "support_routing": 576,
+    "incident_severity": 288,
+    "sentiment": 216,
+    "refund_policy": 216,
+    "email_action": 192,
+    "order_intent": 240,
+    "content_moderation": 144,
+    "expense_category": 240,
+    "bug_component": 240,
+    "lead_quality": 144,
+    "document_type": 240,
+    "transaction_risk": 144,
+    "it_helpdesk": 240,
+    "agent_next_step": 192,
+    "support_routing_it": 192,
+    "sentiment_it": 144
+  },
+  "val": {
+    "support_routing": 48,
+    "incident_severity": 32,
+    "sentiment": 24,
+    "refund_policy": 24,
+    "email_action": 32,
+    "order_intent": 40,
+    "content_moderation": 24,
+    "expense_category": 40,
+    "bug_component": 40,
+    "lead_quality": 16,
+    "document_type": 24,
+    "transaction_risk": 16,
+    "it_helpdesk": 24,
+    "agent_next_step": 16,
+    "support_routing_it": 16,
+    "sentiment_it": 16
+  },
+  "test": {
+    "support_routing": 48,
+    "incident_severity": 32,
+    "sentiment": 24,
+    "refund_policy": 24,
+    "email_action": 32,
+    "order_intent": 40,
+    "content_moderation": 24,
+    "expense_category": 40,
+    "bug_component": 40,
+    "lead_quality": 8,
+    "document_type": 16,
+    "transaction_risk": 8,
+    "it_helpdesk": 16,
+    "agent_next_step": 16,
+    "support_routing_it": 16,
+    "sentiment_it": 8
+  },
+  "ood": {
+    "pr_review": 72,
+    "shipping_method": 72,
+    "leave_request": 72
+  }
+}

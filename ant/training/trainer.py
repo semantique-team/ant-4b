@@ -14,7 +14,7 @@ from ant.model import ANTModel
 from ant.training.data import DecisionDataset, decision_loader
 from ant.training.losses import combined_loss
 from ant.training.modes import set_training_mode
-from ant.utils import count_parameters
+from ant.utils import count_parameters, supports_bf16
 
 
 @dataclass
@@ -26,7 +26,7 @@ class TrainingConfig:
     weight_decay: float = 0.01
     warmup_ratio: float = 0.05
     max_grad_norm: float = 1.0
-    amp: bool | None = None  # None: bf16 autocast on CUDA only
+    amp: bool | None = None  # None: bf16 autocast on Ampere+ CUDA only
     seed: int = 42
     eval_every: int = 1
     log_every: int = 25
@@ -96,12 +96,13 @@ class Trainer:
             return 0.5 * (1.0 + math.cos(math.pi * progress))
 
         scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_multiplier)
-        use_amp = cfg.amp if cfg.amp is not None else self.device.type == "cuda"
+        use_amp = cfg.amp if cfg.amp is not None else supports_bf16(self.device)
 
         trainable_count, total_count = count_parameters(self.model)
         report = TrainingReport(trainable_parameters=trainable_count, total_parameters=total_count)
 
         step = 0
+        best_head: dict[str, torch.Tensor] | None = None
         for epoch in range(1, cfg.epochs + 1):
             self.model.train()
             # the backbone stays in eval mode: frozen BatchNorm-free layers behave
@@ -124,6 +125,11 @@ class Trainer:
                         margin=cfg.margin,
                     )
                 loss = loss_output.total
+                if not torch.isfinite(loss):
+                    raise FloatingPointError(
+                        f"non-finite loss at step {step + 1}; with a float16 backbone this "
+                        "means activation overflow: retry with --dtype bfloat16"
+                    )
                 loss.backward()
                 if cfg.max_grad_norm:
                     nn.utils.clip_grad_norm_(trainable, cfg.max_grad_norm)
@@ -151,11 +157,21 @@ class Trainer:
                     report.best_val_loss = val_loss
                     report.best_val_accuracy = val_accuracy
                     report.best_epoch = epoch
+                    if cfg.mode == "head_only":
+                        best_head = {
+                            name: tensor.detach().clone()
+                            for name, tensor in self.model.head_state_dict().items()
+                        }
                     if cfg.checkpoint_dir:
                         report.checkpoint_path = str(self.model.save_head(cfg.checkpoint_dir))
             report.history.append(entry)
             summary = " ".join(f"{k}={v:.4f}" if isinstance(v, float) else f"{k}={v}" for k, v in entry.items())
             print(f"[epoch {epoch}] {summary}")
+
+        if best_head is not None:
+            # calibration and the saved checkpoint must describe the best epoch,
+            # not whatever the last (possibly overfit) epoch left behind
+            self.model.load_head_state_dict(best_head)
 
         if cfg.checkpoint_dir and report.checkpoint_path is None:
             report.checkpoint_path = str(self.model.save_head(cfg.checkpoint_dir))

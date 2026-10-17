@@ -67,3 +67,15 @@ def test_all_scorers_run_through_model(backbone):
         variant = ANTModel(config, backbone=backbone)
         scores = variant.score_candidates("a state", "a question", ["x", "y", "z"])
         assert scores.shape == (3,)
+
+
+def test_load_ignores_the_device_saved_by_the_training_machine(tmp_path):
+    """A checkpoint trained with device='cuda' must load on a machine without CUDA."""
+    from dataclasses import replace
+
+    from ant.model import ANTModel
+
+    model = ANTModel.tiny()
+    model.config = replace(model.config, device="cuda")
+    model.save_head(tmp_path / "run")
+    assert ANTModel.load(tmp_path / "run").config.device == "auto"

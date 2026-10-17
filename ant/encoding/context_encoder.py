@@ -51,4 +51,5 @@ class ContextEncoder(nn.Module):
         texts = [self.format(state, question) for state, question in zip(states, questions)]
         output = self.backbone.encode(texts, batch_size=batch_size, max_length=max_length)
         pooled = self.pool_hidden(output)
-        return self.dropout(self.projection(self.input_norm(pooled)))
+        # the head stays fp32 under a fp16/bf16 backbone
+        return self.dropout(self.projection(self.input_norm(pooled.float())))

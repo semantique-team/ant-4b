@@ -1,0 +1,242 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 840" width="1000" height="840" role="img"
+     aria-labelledby="ant-architecture-title ant-architecture-desc">
+  <title id="ant-architecture-title">ANT-4B System One scoring path</title>
+  <desc id="ant-architecture-desc">How ANT encodes a state with its question and every candidate through a shared frozen Qwen3.5-4B decoder, scores each candidate, calibrates the distribution, and hands execute or escalate decisions to the application or a System 2 model.</desc>
+
+  <style>
+    @media (prefers-color-scheme: dark) {
+      .paper { fill: #14171c; }
+      .node-mask, .label-mask { fill: #14171c; }
+      .label-mask.on-zone { fill: #191d23; }
+      .node { fill: #1b1f26; stroke: #e6e8ec; }
+      .node.focal { fill: #3a271d; stroke: #e08a5c; }
+      .node-title { fill: #e6e8ec; }
+      .node-sub, .arrow-label, .eyebrow, .legend-label, .callout { fill: #858e9c; }
+      .connector { stroke: #a6aeba; }
+      .zone { fill: #191d23; stroke: #2c313a; }
+      .tag { stroke: #858e9c; }
+      .rule, .legend-key { stroke: #2c313a; }
+    }
+  </style>
+
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#525b6a"/>
+    </marker>
+    <marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#25537d"/>
+    </marker>
+  </defs>
+
+  <rect class="paper" x="0" y="0" width="1000" height="840" fill="#f7f7f5"/>
+
+  <text class="eyebrow" x="32" y="40" fill="#6b7482" font-size="8"
+        font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace"
+        letter-spacing="0.14em">ANT-4B ARCHITECTURE</text>
+  <text class="figure-title" x="32" y="76" fill="#22262e" font-size="28"
+        font-family="Georgia, 'Iowan Old Style', 'Times New Roman', serif">System One scoring path</text>
+  <line class="rule" x1="32" y1="96" x2="968" y2="96" stroke="#d5d8dd" stroke-width="0.8"/>
+
+  <!-- zones: decision head (shared frozen decoder), inference stack -->
+  <rect class="zone" x="224" y="232" width="568" height="256" rx="8"
+        fill="#fbfbfa" stroke="#d5d8dd" stroke-width="0.8" stroke-dasharray="4,4"/>
+  <rect class="label-mask on-zone" x="240" y="228" width="252" height="12" rx="2" fill="#fbfbfa"/>
+  <text class="node-sub" x="244" y="236" fill="#6b7482" font-size="8"
+        font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace"
+        letter-spacing="0.14em">DECISION HEAD · SHARED FROZEN DECODER</text>
+
+  <rect class="zone" x="224" y="528" width="568" height="120" rx="8"
+        fill="#fbfbfa" stroke="#d5d8dd" stroke-width="0.8" stroke-dasharray="4,4"/>
+  <rect class="label-mask on-zone" x="240" y="524" width="120" height="12" rx="2" fill="#fbfbfa"/>
+  <text class="node-sub" x="244" y="532" fill="#6b7482" font-size="8"
+        font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace"
+        letter-spacing="0.14em">INFERENCE STACK</text>
+
+  <!-- connectors -->
+  <line class="connector" x1="360" y1="192" x2="360" y2="272" stroke="#525b6a" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <rect class="label-mask on-zone" x="368" y="248" width="88" height="12" rx="2" fill="#fbfbfa"/>
+  <text class="arrow-label" x="412" y="257" fill="#6b7482" font-size="8"
+        font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace"
+        text-anchor="middle" letter-spacing="0.06em">STATE + Q</text>
+
+  <line class="connector" x1="656" y1="192" x2="656" y2="272" stroke="#525b6a" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <rect class="label-mask on-zone" x="664" y="248" width="104" height="12" rx="2" fill="#fbfbfa"/>
+  <text class="arrow-label" x="716" y="257" fill="#6b7482" font-size="8"
+        font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace"
+        text-anchor="middle" letter-spacing="0.06em">CANDIDATES</text>
+
+  <path class="connector" d="M 360,328 V 352 Q 360,360 368,360 H 464 Q 472,360 472,368 V 384"
+        fill="none" stroke="#525b6a" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <path class="connector" d="M 656,328 V 352 Q 656,360 648,360 H 528 Q 520,360 520,368 V 384"
+        fill="none" stroke="#525b6a" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+  <path class="connector" d="M 456,448 V 520 Q 456,528 448,528 H 368 Q 360,528 360,536 V 560"
+        fill="none" stroke="#525b6a" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <rect class="label-mask on-zone" x="464" y="472" width="112" height="12" rx="2" fill="#fbfbfa"/>
+  <text class="arrow-label" x="520" y="481" fill="#6b7482" font-size="8"
+        font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace"
+        text-anchor="middle" letter-spacing="0.06em">RAW SCORES</text>
+
+  <line class="connector" x1="432" y1="592" x2="584" y2="592" stroke="#525b6a" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <rect class="label-mask" x="464" y="572" width="56" height="12" rx="2" fill="#f7f7f5"/>
+  <text class="arrow-label" x="492" y="581" fill="#6b7482" font-size="8"
+        font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace"
+        text-anchor="middle" letter-spacing="0.06em">CAL P</text>
+
+  <path class="connector" d="M 632,624 V 660 Q 632,668 624,668 H 472 Q 464,668 464,676 V 696"
+        fill="none" stroke="#25537d" stroke-width="1.2" marker-end="url(#arrow-link)"/>
+  <rect class="label-mask" x="512" y="650" width="88" height="12" rx="2" fill="#f7f7f5"/>
+  <text class="arrow-label" x="556" y="659" fill="#6b7482" font-size="8"
+        font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace"
+        text-anchor="middle" letter-spacing="0.06em">EXECUTE</text>
+
+  <line class="connector" x1="680" y1="624" x2="680" y2="696" stroke="#25537d" stroke-width="1.2" marker-end="url(#arrow-link)"/>
+  <rect class="label-mask" x="688" y="644" width="88" height="12" rx="2" fill="#f7f7f5"/>
+  <text class="arrow-label" x="732" y="653" fill="#6b7482" font-size="8"
+        font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace"
+        text-anchor="middle" letter-spacing="0.06em">ESCALATE</text>
+
+  <text class="callout" x="224" y="510" fill="#6b7482" font-size="8"
+        font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace">AutoModel · no LM head · no generate() · pooled hidden states feed both towers</text>
+
+  <!-- nodes -->
+  <rect class="node-mask" x="280" y="136" width="160" height="56" rx="6" fill="#f7f7f5"/>
+  <rect class="node" x="280" y="136" width="160" height="56" rx="6"
+        fill="#e9ecf0" stroke="#525b6a" stroke-width="1"/>
+  <rect class="tag" x="288" y="144" width="24" height="12" rx="2" fill="none" stroke="#525b6a" stroke-width="0.8"/>
+  <text class="node-sub" x="300" y="152" fill="#525b6a" font-size="8"
+        font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace"
+        text-anchor="middle" letter-spacing="0.08em">IN</text>
+  <text class="node-title" x="360" y="172" fill="#22262e" font-size="12" font-weight="600"
+        font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
+        text-anchor="middle">State + question</text>
+  <text class="node-sub" x="360" y="186" fill="#6b7482" font-size="8"
+        font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace"
+        text-anchor="middle">text · json</text>
+
+  <rect class="node-mask" x="576" y="136" width="160" height="56" rx="6" fill="#f7f7f5"/>
+  <rect class="node" x="576" y="136" width="160" height="56" rx="6"
+        fill="#e9ecf0" stroke="#525b6a" stroke-width="1"/>
+  <rect class="tag" x="584" y="144" width="24" height="12" rx="2" fill="none" stroke="#525b6a" stroke-width="0.8"/>
+  <text class="node-sub" x="596" y="152" fill="#525b6a" font-size="8"
+        font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace"
+        text-anchor="middle">IN</text>
+  <text class="node-title" x="656" y="172" fill="#22262e" font-size="12" font-weight="600"
+        font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
+        text-anchor="middle">Candidate set</text>
+  <text class="node-sub" x="656" y="186" fill="#6b7482" font-size="8"
+        font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace"
+        text-anchor="middle">N semantic objects</text>
+
+  <rect class="node-mask" x="288" y="272" width="144" height="64" rx="6" fill="#f7f7f5"/>
+  <rect class="node" x="288" y="272" width="144" height="64" rx="6"
+        fill="#ffffff" stroke="#22262e" stroke-width="1"/>
+  <rect class="tag" x="296" y="280" width="40" height="12" rx="2" fill="none" stroke="#6b7482" stroke-width="0.8"/>
+  <text class="node-sub" x="316" y="288" fill="#6b7482" font-size="8"
+        font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace"
+        text-anchor="middle" letter-spacing="0.08em">ENC</text>
+  <text class="node-title" x="360" y="312" fill="#22262e" font-size="12" font-weight="600"
+        font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
+        text-anchor="middle">Context Encoder</text>
+  <text class="node-sub" x="360" y="328" fill="#6b7482" font-size="8"
+        font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace"
+        text-anchor="middle">mean-pool → proj</text>
+
+  <rect class="node-mask" x="584" y="272" width="144" height="64" rx="6" fill="#f7f7f5"/>
+  <rect class="node" x="584" y="272" width="144" height="64" rx="6"
+        fill="#ffffff" stroke="#22262e" stroke-width="1"/>
+  <rect class="tag" x="592" y="280" width="40" height="12" rx="2" fill="none" stroke="#6b7482" stroke-width="0.8"/>
+  <text class="node-sub" x="612" y="288" fill="#6b7482" font-size="8"
+        font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace"
+        text-anchor="middle" letter-spacing="0.08em">ENC</text>
+  <text class="node-title" x="656" y="312" fill="#22262e" font-size="12" font-weight="600"
+        font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
+        text-anchor="middle">Candidate Encoder</text>
+  <text class="node-sub" x="656" y="328" fill="#6b7482" font-size="8"
+        font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace"
+        text-anchor="middle">set-level pooling</text>
+
+  <rect class="node-mask" x="424" y="384" width="144" height="64" rx="6" fill="#f7f7f5"/>
+  <rect class="node" x="424" y="384" width="144" height="64" rx="6"
+        fill="#f4e3d8" stroke="#a8431a" stroke-width="1.2"/>
+  <rect class="tag" x="432" y="392" width="64" height="12" rx="2" fill="none" stroke="#a8431a" stroke-width="0.8"/>
+  <text class="node-sub" x="464" y="400" fill="#a8431a" font-size="8"
+        font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace"
+        text-anchor="middle" letter-spacing="0.08em">SCORER</text>
+  <text class="node-title" x="496" y="424" fill="#22262e" font-size="12" font-weight="600"
+        font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
+        text-anchor="middle">Scoring Head</text>
+  <text class="node-sub" x="496" y="440" fill="#6b7482" font-size="8"
+        font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace"
+        text-anchor="middle">f_θ(z_ctx, z_o)</text>
+
+  <rect class="node-mask" x="288" y="560" width="144" height="64" rx="6" fill="#f7f7f5"/>
+  <rect class="node" x="288" y="560" width="144" height="64" rx="6"
+        fill="#eef0f2" stroke="#525b6a" stroke-width="1"/>
+  <rect class="tag" x="296" y="568" width="32" height="12" rx="2" fill="none" stroke="#525b6a" stroke-width="0.8"/>
+  <text class="node-sub" x="312" y="576" fill="#525b6a" font-size="8"
+        font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace"
+        text-anchor="middle" letter-spacing="0.08em">CAL</text>
+  <text class="node-title" x="360" y="600" fill="#22262e" font-size="12" font-weight="600"
+        font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
+        text-anchor="middle">Calibrator</text>
+  <text class="node-sub" x="360" y="616" fill="#6b7482" font-size="8"
+        font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace"
+        text-anchor="middle">temperature · affine</text>
+
+  <rect class="node-mask" x="584" y="560" width="144" height="64" rx="6" fill="#f7f7f5"/>
+  <rect class="node" x="584" y="560" width="144" height="64" rx="6"
+        fill="#eef0f2" stroke="#525b6a" stroke-width="1"/>
+  <rect class="tag" x="592" y="568" width="56" height="12" rx="2" fill="none" stroke="#525b6a" stroke-width="0.8"/>
+  <text class="node-sub" x="620" y="576" fill="#525b6a" font-size="8"
+        font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace"
+        text-anchor="middle" letter-spacing="0.08em">POLICY</text>
+  <text class="node-title" x="656" y="600" fill="#22262e" font-size="12" font-weight="600"
+        font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
+        text-anchor="middle">Escalation Policy</text>
+  <text class="node-sub" x="656" y="616" fill="#6b7482" font-size="8"
+        font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace"
+        text-anchor="middle">risk–coverage fit</text>
+
+  <rect class="node-mask" x="384" y="696" width="160" height="64" rx="6" fill="#f7f7f5"/>
+  <rect class="node" x="384" y="696" width="160" height="64" rx="6"
+        fill="#f6f6f4" stroke="#6b7482" stroke-width="1"/>
+  <rect class="tag" x="392" y="704" width="32" height="12" rx="2" fill="none" stroke="#6b7482" stroke-width="0.8"/>
+  <text class="node-sub" x="408" y="712" fill="#858e9c" font-size="8"
+        font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace"
+        text-anchor="middle" letter-spacing="0.08em">EXT</text>
+  <text class="node-title" x="464" y="736" fill="#22262e" font-size="12" font-weight="600"
+        font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
+        text-anchor="middle">Application</text>
+  <text class="node-sub" x="464" y="752" fill="#6b7482" font-size="8"
+        font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace"
+        text-anchor="middle">typed answer</text>
+
+  <rect class="node-mask" x="576" y="696" width="160" height="64" rx="6" fill="#f7f7f5"/>
+  <rect class="node" x="576" y="696" width="160" height="64" rx="6"
+        fill="#f6f6f4" stroke="#6b7482" stroke-width="1"/>
+  <rect class="tag" x="584" y="704" width="32" height="12" rx="2" fill="none" stroke="#6b7482" stroke-width="0.8"/>
+  <text class="node-sub" x="600" y="712" fill="#858e9c" font-size="8"
+        font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace"
+        text-anchor="middle" letter-spacing="0.08em">EXT</text>
+  <text class="node-title" x="656" y="736" fill="#22262e" font-size="12" font-weight="600"
+        font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
+        text-anchor="middle">System 2 Model</text>
+  <text class="node-sub" x="656" y="752" fill="#6b7482" font-size="8"
+        font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace"
+        text-anchor="middle">slow · deliberative</text>
+
+  <!-- legend -->
+  <line class="rule" x1="32" y1="776" x2="968" y2="776" stroke="#d5d8dd" stroke-width="0.8"/>
+  <text class="legend-label" x="32" y="796" fill="#6b7482" font-size="8"
+        font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace"
+        letter-spacing="0.14em">LEGEND</text>
+  <line class="legend-key" x1="120" y1="792" x2="152" y2="792" stroke="#525b6a" stroke-width="1.2"/>
+  <text class="legend-label" x="160" y="796" fill="#6b7482" font-size="8"
+        font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace"
+        letter-spacing="0.06em">INTERNAL DATA FLOW</text>
+  <line class="legend-key" x1="352" y1="792" x2="384" y2="792" stroke="#25537d" stroke-width="1.2"/>
+  <text class="legend-label" x="392" y="796" fill="#6b7482" font-size="8"
+        font-family="ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace"
+        letter-spacing="0.06em">HANDOFF OUTSIDE ANT</text>
+</svg>

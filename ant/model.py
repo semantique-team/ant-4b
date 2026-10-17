@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from collections import OrderedDict
+from dataclasses import replace
 from pathlib import Path
 from typing import Sequence
 
@@ -208,10 +209,13 @@ class ANTModel(nn.Module):
         *,
         backbone: nn.Module | None = None,
         map_location: str | torch.device = "cpu",
+        device: str = "auto",
     ) -> "ANTModel":
+        """Load a head checkpoint. ``device`` is where it runs now: the device saved in
+        the checkpoint is where it was *trained* (e.g. cuda on Colab) and is ignored."""
         path = Path(path)
         blob = torch.load(path / "ant_head.pt", map_location=map_location, weights_only=False)
-        config = ANTConfig.from_dict(blob["config"])
+        config = replace(ANTConfig.from_dict(blob["config"]), device=device)
         if backbone is None:
             if config.backbone_model == "mock":
                 from ant.backbone.mock import MockBackbone

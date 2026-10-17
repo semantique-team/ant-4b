@@ -1,0 +1,31 @@
+{
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 2.054831210167927,
+      "seconds": 414.0008327960968,
+      "val_loss": 3.0764875572171198,
+      "val_accuracy": 0.6921296296296297
+    },
+    {
+      "epoch": 2,
+      "train_loss": 0.2857773522635033,
+      "seconds": 414.6631546020508,
+      "val_loss": 1.4005513980430833,
+      "val_accuracy": 0.7777777777777778
+    },
+    {
+      "epoch": 3,
+      "train_loss": 0.010212161423828681,
+      "seconds": 412.8791649341583,
+      "val_loss": 1.2568678282898564,
+      "val_accuracy": 0.8078703703703703
+    }
+  ],
+  "best_epoch": 3,
+  "best_val_loss": 1.2568678282898564,
+  "best_val_accuracy": 0.8078703703703703,
+  "trainable_parameters": 2632704,
+  "total_parameters": 4208384000,
+  "checkpoint_path": "runs/ant-multitask"
+}

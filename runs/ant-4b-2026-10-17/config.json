@@ -1,0 +1,18 @@
+{
+  "backbone_model": "Qwen/Qwen3.5-4B",
+  "torch_dtype": "float16",
+  "device": "cuda",
+  "attn_implementation": null,
+  "max_context_tokens": 1024,
+  "max_candidate_tokens": 128,
+  "encode_batch_size": 8,
+  "scoring_dim": 512,
+  "scorer": "dot",
+  "context_pooling": "mean",
+  "candidate_pooling": "mean",
+  "dropout": 0.0,
+  "context_template": null,
+  "candidate_template": null,
+  "temperature": 1.0,
+  "seed": 42
+}

@@ -119,6 +119,20 @@ def prediction_metrics(predictions: PredictionSet) -> dict[str, float]:
     }
 
 
+def accuracy_by_use_case(
+    predictions: PredictionSet, dataset: DecisionDataset
+) -> dict[str, dict[str, float]]:
+    """Accuracy and count per ``use_case`` metadata tag (dataset order == prediction order)."""
+    groups: dict[str, list[bool]] = {}
+    for example, correct in zip(dataset.examples, predictions.corrects):
+        tag = (example.metadata or {}).get("use_case", "untagged")
+        groups.setdefault(tag, []).append(correct)
+    return {
+        tag: {"accuracy": float(np.mean(hits)), "n": len(hits)}
+        for tag, hits in sorted(groups.items())
+    }
+
+
 def score_matrix(
     model,
     dataset: DecisionDataset,
@@ -137,8 +151,8 @@ def score_matrix(
         for batch in loader:
             scores, mask = model(batch.states, batch.questions, batch.candidates)
             blocks.append(scores.float().cpu().numpy())
-            labels.append(batch.labels.numpy())
-            masks.append(mask.numpy())
+            labels.append(batch.labels.cpu().numpy())
+            masks.append(mask.cpu().numpy())
     width = max(block.shape[1] for block in blocks)
     padded_scores = [
         np.pad(block, ((0, 0), (0, width - block.shape[1])), constant_values=-1.0e9)

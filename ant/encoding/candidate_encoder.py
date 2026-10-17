@@ -48,7 +48,8 @@ class CandidateEncoder(nn.Module):
         output = self.backbone.encode(texts, batch_size=batch_size, max_length=max_length)
         hidden = output.hidden_states.to(torch.float32)
         pooled = self.pooling(hidden, output.attention_mask)
-        return self.dropout(self.projection(self.input_norm(pooled)))
+        # the head stays fp32 under a fp16/bf16 backbone
+        return self.dropout(self.projection(self.input_norm(pooled.float())))
 
 
 __all__ = ["CandidateEncoder"]
