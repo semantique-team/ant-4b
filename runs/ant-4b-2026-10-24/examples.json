@@ -1,0 +1,548 @@
+[
+  {
+    "state": "Channel: #inbox. After the upgrade I was billed for both the old and the new plan.",
+    "question": "Which team should handle this customer request?",
+    "candidates": [
+      "Engineering support",
+      "CS team",
+      "Billing team",
+      "InfoSec",
+      "Sales team",
+      "Counsel"
+    ],
+    "correct": "Billing team",
+    "use_case": "support_routing"
+  },
+  {
+    "state": "Update: After the upgrade I was billed for both the old and the new plan.",
+    "question": "Route this message to the right department.",
+    "candidates": [
+      "Security team",
+      "Legal department",
+      "Finance",
+      "CS team"
+    ],
+    "correct": "Finance",
+    "use_case": "support_routing"
+  },
+  {
+    "state": "The main API has returned 5xx for 20 minutes and our largest customers are escalating.",
+    "question": "What is the severity of this incident?",
+    "candidates": [
+      "Medium",
+      "SEV1",
+      "SEV4",
+      "SEV2"
+    ],
+    "correct": "SEV1",
+    "use_case": "incident_severity"
+  },
+  {
+    "state": "Channel: #inbox. The main API has returned 5xx for 20 minutes and our largest customers are escalating.",
+    "question": "What is the severity of this incident?",
+    "candidates": [
+      "P3",
+      "P4",
+      "P1",
+      "P2"
+    ],
+    "correct": "P1",
+    "use_case": "incident_severity"
+  },
+  {
+    "state": "New message: Not perfect, but easily the best option I have tried so far. Sent from my phone.",
+    "question": "What is the sentiment of this message?",
+    "candidates": [
+      "neutral",
+      "negative",
+      "positive"
+    ],
+    "correct": "positive",
+    "use_case": "sentiment"
+  },
+  {
+    "state": "Update: Not perfect, but easily the best option I have tried so far.",
+    "question": "How does the author feel?",
+    "candidates": [
+      "negative",
+      "neutral",
+      "positive"
+    ],
+    "correct": "positive",
+    "use_case": "sentiment"
+  },
+  {
+    "state": "Forwarded: The customer was billed twice for the same order. Policy: duplicate charges are always refunded. Sent from my phone.",
+    "question": "Does this refund request satisfy the policy?",
+    "candidates": [
+      "approve",
+      "deny"
+    ],
+    "correct": "approve",
+    "use_case": "refund_policy"
+  },
+  {
+    "state": "Update: The customer was billed twice for the same order. Policy: duplicate charges are always refunded.",
+    "question": "Should this refund be approved?",
+    "candidates": [
+      "yes",
+      "Send to a manager"
+    ],
+    "correct": "yes",
+    "use_case": "refund_policy"
+  },
+  {
+    "state": "New message: A teammate is blocked and asks which of two API designs to use. Thanks.",
+    "question": "What should I do with this email?",
+    "candidates": [
+      "schedule a meeting",
+      "forward to a colleague",
+      "reply now"
+    ],
+    "correct": "reply now",
+    "use_case": "email_action"
+  },
+  {
+    "state": "Context: A teammate is blocked and asks which of two API designs to use. (please advise)",
+    "question": "Choose the next action for this message.",
+    "candidates": [
+      "Set up a call",
+      "no action needed",
+      "respond today",
+      "Forward it"
+    ],
+    "correct": "respond today",
+    "use_case": "email_action"
+  },
+  {
+    "state": "When will my parcel reach me?",
+    "question": "What does the customer want to do?",
+    "candidates": [
+      "cancel order",
+      "change address",
+      "track order",
+      "return item"
+    ],
+    "correct": "track order",
+    "use_case": "order_intent"
+  },
+  {
+    "state": "New message: When will my parcel reach me? Thanks.",
+    "question": "Identify the intent of this chat message.",
+    "candidates": [
+      "change address",
+      "track order",
+      "talk to a human",
+      "return item",
+      "cancel order"
+    ],
+    "correct": "track order",
+    "use_case": "order_intent"
+  },
+  {
+    "state": "The referee was awful yesterday; that was never a penalty. Thanks.",
+    "question": "Does this content violate the community guidelines?",
+    "candidates": [
+      "Approve",
+      "needs review"
+    ],
+    "correct": "Approve",
+    "use_case": "content_moderation"
+  },
+  {
+    "state": "The referee was awful yesterday; that was never a penalty. Sent from my phone.",
+    "question": "What should moderation do with this post?",
+    "candidates": [
+      "allow",
+      "remove",
+      "flag for review"
+    ],
+    "correct": "allow",
+    "use_case": "content_moderation"
+  },
+  {
+    "state": "Car rental for the on-site installation in Turin.",
+    "question": "Where should this expense be booked?",
+    "candidates": [
+      "Training",
+      "Meals",
+      "Travel",
+      "Office supplies"
+    ],
+    "correct": "Travel",
+    "use_case": "expense_category"
+  },
+  {
+    "state": "Car rental for the on-site installation in Turin.",
+    "question": "Where should this expense be booked?",
+    "candidates": [
+      "Training",
+      "Travel",
+      "Meals",
+      "Office supplies"
+    ],
+    "correct": "Travel",
+    "use_case": "expense_category"
+  },
+  {
+    "state": "New message: Dark mode shows white text on a white card in the settings modal. Sent from my phone.",
+    "question": "Which component owns this bug?",
+    "candidates": [
+      "client side",
+      "mobile apps",
+      "cloud infra",
+      "data layer",
+      "server side"
+    ],
+    "correct": "client side",
+    "use_case": "bug_component"
+  },
+  {
+    "state": "New message: Dark mode shows white text on a white card in the settings modal. Thanks.",
+    "question": "Where does this bug belong?",
+    "candidates": [
+      "backend",
+      "infrastructure",
+      "frontend"
+    ],
+    "correct": "frontend",
+    "use_case": "bug_component"
+  },
+  {
+    "state": "New message: An engineer from a mid-size firm asks how the API compares with a competitor. Thanks.",
+    "question": "How qualified is this lead?",
+    "candidates": [
+      "cold",
+      "warm",
+      "hot"
+    ],
+    "correct": "warm",
+    "use_case": "lead_quality"
+  },
+  {
+    "state": "Channel: #inbox. An engineer from a mid-size firm asks how the API compares with a competitor.",
+    "question": "Rate this sales lead.",
+    "candidates": [
+      "warm",
+      "hot",
+      "cold"
+    ],
+    "correct": "warm",
+    "use_case": "lead_quality"
+  },
+  {
+    "state": "New message: Signed by the authorised representatives on the date written above. Thanks.",
+    "question": "Which folder does this file belong in?",
+    "candidates": [
+      "invoice",
+      "resume",
+      "contract",
+      "receipt",
+      "report"
+    ],
+    "correct": "contract",
+    "use_case": "document_type"
+  },
+  {
+    "state": "New message: Signed by the authorised representatives on the date written above. Thanks.",
+    "question": "Classify this document.",
+    "candidates": [
+      "Receipt",
+      "Report",
+      "Contract"
+    ],
+    "correct": "Contract",
+    "use_case": "document_type"
+  },
+  {
+    "state": "Channel: #inbox. A card used for 6 small online purchases in 15 minutes at new merchants.",
+    "question": "Choose the fraud decision for this payment.",
+    "candidates": [
+      "hold for analyst",
+      "Block"
+    ],
+    "correct": "hold for analyst",
+    "use_case": "transaction_risk"
+  },
+  {
+    "state": "Forwarded: A card used for 6 small online purchases in 15 minutes at new merchants.",
+    "question": "Is this payment safe to process?",
+    "candidates": [
+      "hold for analyst",
+      "Approve"
+    ],
+    "correct": "hold for analyst",
+    "use_case": "transaction_risk"
+  },
+  {
+    "state": "The keyboard has three dead keys after a coffee spill. (please advise)",
+    "question": "Which queue should this IT ticket go to?",
+    "candidates": [
+      "hardware",
+      "access request"
+    ],
+    "correct": "hardware",
+    "use_case": "it_helpdesk"
+  },
+  {
+    "state": "The keyboard has three dead keys after a coffee spill. Sent from my phone.",
+    "question": "Which queue should this IT ticket go to?",
+    "candidates": [
+      "Credentials",
+      "Hardware issue",
+      "Install software",
+      "Permissions",
+      "Network problem"
+    ],
+    "correct": "Hardware issue",
+    "use_case": "it_helpdesk"
+  },
+  {
+    "state": "Context: The user asks to book a meeting room and the calendar tool can do it. (please advise)",
+    "question": "Pick the next step for the agent.",
+    "candidates": [
+      "answer directly",
+      "refuse",
+      "ask for clarification",
+      "call a tool"
+    ],
+    "correct": "call a tool",
+    "use_case": "agent_next_step"
+  },
+  {
+    "state": "Forwarded: The user asks to book a meeting room and the calendar tool can do it. (please advise)",
+    "question": "What should the assistant do next?",
+    "candidates": [
+      "Ask a follow-up question",
+      "call the API"
+    ],
+    "correct": "call the API",
+    "use_case": "agent_next_step"
+  },
+  {
+    "state": "L'esportazione dalla dashboard produce un file corrotto.",
+    "question": "A chi va assegnato questo ticket?",
+    "candidates": [
+      "Legal",
+      "Sales",
+      "Technical Support",
+      "Billing"
+    ],
+    "correct": "Technical Support",
+    "use_case": "support_routing_it"
+  },
+  {
+    "state": "L'esportazione dalla dashboard produce un file corrotto.",
+    "question": "Quale team deve gestire questa richiesta?",
+    "candidates": [
+      "Technical Support",
+      "Sales",
+      "Billing"
+    ],
+    "correct": "Technical Support",
+    "use_case": "support_routing_it"
+  },
+  {
+    "state": "Il supporto non mi ha aiutato e ho perso un'ora.",
+    "question": "Com'è il tono dell'autore?",
+    "candidates": [
+      "neutral",
+      "negative",
+      "positive"
+    ],
+    "correct": "negative",
+    "use_case": "sentiment_it"
+  },
+  {
+    "state": "Il supporto non mi ha aiutato e ho perso un'ora.",
+    "question": "Com'è il tono dell'autore?",
+    "candidates": [
+      "negative",
+      "positive"
+    ],
+    "correct": "negative",
+    "use_case": "sentiment_it"
+  },
+  {
+    "state": "The review call ended with three decisions that the team needs in writing.",
+    "question": "Which follow-up action fits this meeting note?",
+    "candidates": [
+      "create task",
+      "escalate",
+      "schedule follow-up",
+      "send notes"
+    ],
+    "correct": "send notes",
+    "use_case": "meeting_action"
+  },
+  {
+    "state": "The review call ended with three decisions that the team needs in writing.",
+    "question": "Pick the next step for the meeting owner.",
+    "candidates": [
+      "send notes",
+      "create task",
+      "escalate",
+      "schedule follow-up"
+    ],
+    "correct": "send notes",
+    "use_case": "meeting_action"
+  },
+  {
+    "state": "New message: The utility invoice follows the fixed monthly rate in the agreement. Thanks.",
+    "question": "What is the next step for this invoice?",
+    "candidates": [
+      "Escalate to finance lead",
+      "Approve payment",
+      "Hold for review",
+      "Ask the vendor"
+    ],
+    "correct": "Approve payment",
+    "use_case": "invoice_discrepancy"
+  },
+  {
+    "state": "New message: The utility invoice follows the fixed monthly rate in the agreement.",
+    "question": "What is the next step for this invoice?",
+    "candidates": [
+      "Escalate to finance lead",
+      "Hold for review",
+      "Ask the vendor",
+      "No discrepancy"
+    ],
+    "correct": "No discrepancy",
+    "use_case": "invoice_discrepancy"
+  },
+  {
+    "state": "Received via web form. The user wants to know what profiling data is stored. (please advise)",
+    "question": "Which response fits this data-rights request?",
+    "candidates": [
+      "Fix the record",
+      "Export the data",
+      "Erase the data",
+      "Decline the request"
+    ],
+    "correct": "Export the data",
+    "use_case": "data_privacy_request"
+  },
+  {
+    "state": "The user wants to know what profiling data is stored. (please advise)",
+    "question": "Which response fits this data-rights request?",
+    "candidates": [
+      "reject",
+      "correct",
+      "access"
+    ],
+    "correct": "access",
+    "use_case": "data_privacy_request"
+  },
+  {
+    "state": "New message: All critical risks have owners and mitigation dates.",
+    "question": "Choose the project health label.",
+    "candidates": [
+      "Stopped",
+      "Closed",
+      "Needs attention",
+      "Healthy"
+    ],
+    "correct": "Healthy",
+    "use_case": "project_status"
+  },
+  {
+    "state": "Received via web form. All critical risks have owners and mitigation dates.",
+    "question": "Choose the project health label.",
+    "candidates": [
+      "done",
+      "at risk",
+      "on track"
+    ],
+    "correct": "on track",
+    "use_case": "project_status"
+  },
+  {
+    "state": "The candidate has the required certification and clear motivation. (please advise)",
+    "question": "Decide the next recruiting step.",
+    "candidates": [
+      "request more information",
+      "hold",
+      "reject",
+      "advance"
+    ],
+    "correct": "advance",
+    "use_case": "candidate_screening"
+  },
+  {
+    "state": "The candidate has the required certification and clear motivation.",
+    "question": "Decide the next recruiting step.",
+    "candidates": [
+      "Move to interview",
+      "Decline"
+    ],
+    "correct": "Move to interview",
+    "use_case": "candidate_screening"
+  },
+  {
+    "state": "Il messaggio contiene un errore di pagamento da correggere subito.",
+    "question": "Cosa si deve fare con questa email?",
+    "candidates": [
+      "reply now",
+      "schedule meeting"
+    ],
+    "correct": "reply now",
+    "use_case": "azione_email_it"
+  },
+  {
+    "state": "Il messaggio contiene un errore di pagamento da correggere subito.",
+    "question": "Quale azione è più adatta per questo messaggio?",
+    "candidates": [
+      "Archivia",
+      "Rispondi subito"
+    ],
+    "correct": "Rispondi subito",
+    "use_case": "azione_email_it"
+  },
+  {
+    "state": "L'integrazione con il CRM restituisce un errore.",
+    "question": "In quale coda deve finire questo ticket?",
+    "candidates": [
+      "Supporto tecnico",
+      "Ufficio vendite",
+      "Pratiche amministrative",
+      "Gestione reclami"
+    ],
+    "correct": "Supporto tecnico",
+    "use_case": "richiesta_assistenza_it"
+  },
+  {
+    "state": "L'integrazione con il CRM restituisce un errore.",
+    "question": "In quale coda deve finire questo ticket?",
+    "candidates": [
+      "commerciale",
+      "amministrativo",
+      "tecnico"
+    ],
+    "correct": "tecnico",
+    "use_case": "richiesta_assistenza_it"
+  },
+  {
+    "state": "L'API critica restituisce errori da mezz'ora.",
+    "question": "Assegna il livello di urgenza.",
+    "candidates": [
+      "P3",
+      "P4",
+      "P1",
+      "P2"
+    ],
+    "correct": "P1",
+    "use_case": "urgenza_ticket_it"
+  },
+  {
+    "state": "L'API critica restituisce errori da mezz'ora.",
+    "question": "Quale priorità ha questo ticket?",
+    "candidates": [
+      "Basso",
+      "Medio",
+      "Critico"
+    ],
+    "correct": "Critico",
+    "use_case": "urgenza_ticket_it"
+  }
+]

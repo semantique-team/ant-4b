@@ -1,0 +1,151 @@
+{
+  "test": {
+    "name": "test",
+    "n": 648,
+    "accuracy": 0.7392,
+    "nll": 0.6214,
+    "brier": 0.3564,
+    "ece": 0.0555,
+    "entropy_mean": 0.6186,
+    "latency_ms_per_example": null,
+    "peak_vram_mb": null,
+    "extra": {},
+    "by_use_case": {
+      "agent_next_step": {
+        "accuracy": 1.0,
+        "n": 16
+      },
+      "azione_email_it": {
+        "accuracy": 0.75,
+        "n": 32
+      },
+      "bug_component": {
+        "accuracy": 0.7,
+        "n": 40
+      },
+      "candidate_screening": {
+        "accuracy": 0.6875,
+        "n": 32
+      },
+      "content_moderation": {
+        "accuracy": 0.5,
+        "n": 24
+      },
+      "data_privacy_request": {
+        "accuracy": 0.78125,
+        "n": 32
+      },
+      "document_type": {
+        "accuracy": 0.9375,
+        "n": 16
+      },
+      "email_action": {
+        "accuracy": 0.65625,
+        "n": 32
+      },
+      "expense_category": {
+        "accuracy": 0.85,
+        "n": 40
+      },
+      "incident_severity": {
+        "accuracy": 0.78125,
+        "n": 32
+      },
+      "invoice_discrepancy": {
+        "accuracy": 0.8125,
+        "n": 32
+      },
+      "it_helpdesk": {
+        "accuracy": 1.0,
+        "n": 16
+      },
+      "lead_quality": {
+        "accuracy": 0.875,
+        "n": 8
+      },
+      "meeting_action": {
+        "accuracy": 0.59375,
+        "n": 32
+      },
+      "order_intent": {
+        "accuracy": 0.875,
+        "n": 40
+      },
+      "project_status": {
+        "accuracy": 0.5,
+        "n": 32
+      },
+      "refund_policy": {
+        "accuracy": 0.5416666666666666,
+        "n": 24
+      },
+      "richiesta_assistenza_it": {
+        "accuracy": 0.6875,
+        "n": 32
+      },
+      "sentiment": {
+        "accuracy": 1.0,
+        "n": 24
+      },
+      "sentiment_it": {
+        "accuracy": 1.0,
+        "n": 8
+      },
+      "support_routing": {
+        "accuracy": 0.8958333333333334,
+        "n": 48
+      },
+      "support_routing_it": {
+        "accuracy": 1.0,
+        "n": 16
+      },
+      "transaction_risk": {
+        "accuracy": 0.125,
+        "n": 8
+      },
+      "urgenza_ticket_it": {
+        "accuracy": 0.34375,
+        "n": 32
+      }
+    }
+  },
+  "ood": {
+    "name": "ood",
+    "n": 456,
+    "accuracy": 0.5965,
+    "nll": 0.851,
+    "brier": 0.5255,
+    "ece": 0.1227,
+    "entropy_mean": 0.6117,
+    "latency_ms_per_example": null,
+    "peak_vram_mb": null,
+    "extra": {},
+    "by_use_case": {
+      "approvazione_spese_it": {
+        "accuracy": 0.525,
+        "n": 120
+      },
+      "contract_review": {
+        "accuracy": 0.6583333333333333,
+        "n": 120
+      },
+      "leave_request": {
+        "accuracy": 0.8472222222222222,
+        "n": 72
+      },
+      "pr_review": {
+        "accuracy": 0.5416666666666666,
+        "n": 72
+      },
+      "shipping_method": {
+        "accuracy": 0.4166666666666667,
+        "n": 72
+      }
+    }
+  },
+  "training": {
+    "best_epoch": 3,
+    "best_val_loss": 1.560288350423826,
+    "best_val_accuracy": 0.7311046511627907
+  }
+}

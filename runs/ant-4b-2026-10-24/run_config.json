@@ -1,0 +1,25 @@
+{
+  "args": {
+    "backbone": "Qwen/Qwen3.5-4B",
+    "scorer": "dot",
+    "mode": "head_only",
+    "device": "cuda",
+    "dtype": "auto",
+    "epochs": 3,
+    "batch_size": 8,
+    "lr": 0.0002,
+    "train_size": 1200,
+    "val_size": 300,
+    "test_size": 300,
+    "seed": 7,
+    "encode_batch_size": 8,
+    "no_calibration": false,
+    "target_risk": 0.1,
+    "data": "data/ant-multitask",
+    "name": "ANT 4B",
+    "examples_per_use_case": 2,
+    "out": "/kaggle/working/runs/ant-4b-2026-10-24"
+  },
+  "python": "3.13.15",
+  "torch": "2.11.0+cu128"
+}
