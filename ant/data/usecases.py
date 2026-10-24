@@ -781,7 +781,496 @@ USE_CASES: tuple[UseCase, ...] = (
             ),
         },
     ),
+    UseCase(
+        name="meeting_action",
+        title="Meeting action",
+        questions=(
+            "What should happen after this meeting?",
+            "Which follow-up action fits this meeting note?",
+            "Pick the next step for the meeting owner.",
+        ),
+        labels={
+            "send notes": Label(
+                (
+                    "The meeting covered decisions and owners but no recap was sent.",
+                    "The workshop ended with agreed action items and attendees asked for a summary.",
+                    "The demo concluded and the customer requested the recording and next steps.",
+                    "The weekly sync confirmed dates and owners but nobody documented them.",
+                    "The review call ended with three decisions that the team needs in writing.",
+                ),
+                ("Share the recap", "Send minutes"),
+            ),
+            "schedule follow-up": Label(
+                (
+                    "The customer asked to continue the discussion next week but no date was chosen.",
+                    "The technical review found open questions that need another working session.",
+                    "The negotiation call ended with a request for a follow-up demo.",
+                    "The manager asked to revisit staffing after the pilot results.",
+                    "The design review left the pricing decision to a later meeting.",
+                ),
+                ("Book the next call",),
+            ),
+            "create task": Label(
+                (
+                    "The meeting assigned three deliverables with owners and due dates.",
+                    "The retro identified a process fix that should be tracked.",
+                    "The planning call produced a list of engineering work for the next sprint.",
+                    "The customer success review agreed to prepare an adoption report.",
+                    "The audit walkthrough found evidence that someone must collect.",
+                ),
+                ("Open a ticket", "Track the action"),
+            ),
+            "escalate": Label(
+                (
+                    "The meeting revealed a legal deadline that the team cannot meet.",
+                    "The customer threatened to churn and asked for executive sponsorship.",
+                    "The project review found a budget overrun requiring a director decision.",
+                    "The security discussion uncovered an incident that must be reported.",
+                    "The steering committee disagreed on scope and asked for an executive ruling.",
+                ),
+                ("Escalate to management",),
+            ),
+        },
+    ),
+    UseCase(
+        name="invoice_discrepancy",
+        title="Invoice discrepancy",
+        questions=(
+            "How should this invoice discrepancy be handled?",
+            "What is the next step for this invoice?",
+            "Classify this accounts-payable issue.",
+        ),
+        labels={
+            "match": Label(
+                (
+                    "The purchase order, goods receipt and invoice show the same amount and vendor.",
+                    "The subscription invoice matches the contracted seat count and price.",
+                    "The bank payment matches the invoice total after the agreed discount.",
+                    "The expense report receipt and submitted amount are identical.",
+                    "The utility invoice follows the fixed monthly rate in the agreement.",
+                ),
+                ("Approve payment", "No discrepancy"),
+            ),
+            "request clarification": Label(
+                (
+                    "The invoice lists a service period that the contract does not define.",
+                    "The receipt is missing the VAT number and the amount cannot be checked.",
+                    "The invoice has two line items but the purchase order has one.",
+                    "The vendor name differs from the contract and no reference is provided.",
+                    "The invoice quantity is blank and the total cannot be reproduced.",
+                ),
+                ("Ask the vendor",),
+            ),
+            "flag finance": Label(
+                (
+                    "The invoice is 18% higher than the approved purchase order.",
+                    "The same invoice number appears twice in the ledger.",
+                    "The payment term is 60 days while the contract says 30.",
+                    "The bank details changed just before the payment run.",
+                    "The invoice includes an unapproved travel expense.",
+                ),
+                ("Hold for review",),
+            ),
+            "escalate": Label(
+                (
+                    "The invoice claims a penalty that legal has not accepted.",
+                    "The vendor threatens collection action over a disputed amount.",
+                    "The invoice is tied to a suspected fraud report.",
+                    "A director approved an invoice that bypassed procurement.",
+                    "The discrepancy involves a regulated payment and cannot be corrected locally.",
+                ),
+                ("Escalate to finance lead",),
+            ),
+        },
+    ),
+    UseCase(
+        name="data_privacy_request",
+        title="Data privacy request",
+        questions=(
+            "How should this privacy request be handled?",
+            "Which response fits this data-rights request?",
+            "Classify the requested privacy action.",
+        ),
+        labels={
+            "access": Label(
+                (
+                    "The user asks for a copy of all personal data the company holds.",
+                    "A customer requests the history of their account activity.",
+                    "The user asks which third parties received their data.",
+                    "The employee requests a copy of their HR data.",
+                    "The user wants to know what profiling data is stored.",
+                ),
+                ("Export the data",),
+            ),
+            "delete": Label(
+                (
+                    "The user asks to delete their account and all personal data.",
+                    "The customer requests erasure after closing the subscription.",
+                    "The user asks to remove a forum post containing their email address.",
+                    "The ex-employee requests deletion of recruitment data.",
+                    "The user withdraws consent for marketing data.",
+                ),
+                ("Erase the data",),
+            ),
+            "correct": Label(
+                (
+                    "The user says their name is misspelled in the invoice.",
+                    "The customer reports an incorrect delivery address in their profile.",
+                    "The user says their date of birth is wrong.",
+                    "The account shows an old phone number.",
+                    "The user disputes the stored company affiliation.",
+                ),
+                ("Fix the record",),
+            ),
+            "reject": Label(
+                (
+                    "The request asks to erase records the company must keep for tax law.",
+                    "The user asks to delete data needed for an active fraud investigation.",
+                    "The request is from someone who cannot verify ownership of the account.",
+                    "The user asks to remove content belonging to another person.",
+                    "The request would delete data required for a court case.",
+                ),
+                ("Decline the request",),
+            ),
+        },
+    ),
+    UseCase(
+        name="project_status",
+        title="Project status",
+        questions=(
+            "What is the status of this project?",
+            "How should this project update be classified?",
+            "Choose the project health label.",
+        ),
+        labels={
+            "on track": Label(
+                (
+                    "The milestone is due Friday and the remaining work is already merged.",
+                    "The team completed the planned sprint with no blocked items.",
+                    "The budget and timeline match the approved baseline.",
+                    "The customer accepted the prototype and the next release is scheduled.",
+                    "All critical risks have owners and mitigation dates.",
+                ),
+                ("Green", "Healthy"),
+            ),
+            "at risk": Label(
+                (
+                    "The integration is late but the team has a workaround for the launch.",
+                    "Two key dependencies are waiting on another team.",
+                    "The scope grew after the last review without a change request.",
+                    "Testing started late and the buffer is now one day.",
+                    "The supplier confirmed a delivery slip that may affect the demo.",
+                ),
+                ("Amber", "Needs attention"),
+            ),
+            "blocked": Label(
+                (
+                    "The vendor credential expired and nobody can deploy to production.",
+                    "The legal review is blocking the data export feature.",
+                    "The environment is unavailable and the team cannot run tests.",
+                    "A required approval has been waiting for two weeks.",
+                    "The critical bug has no owner and the release cannot proceed.",
+                ),
+                ("Red", "Stopped"),
+            ),
+            "done": Label(
+                (
+                    "The acceptance criteria are signed off and the release notes are published.",
+                    "The migration completed and the old system is decommissioned.",
+                    "The customer confirmed the deliverable in writing.",
+                    "All post-launch monitoring is green for seven days.",
+                    "The project was closed after the final retrospective.",
+                ),
+                ("Complete", "Closed"),
+            ),
+        },
+    ),
+    UseCase(
+        name="candidate_screening",
+        title="Candidate screening",
+        questions=(
+            "What should happen to this job application?",
+            "Which screening decision fits this candidate?",
+            "Decide the next recruiting step.",
+        ),
+        labels={
+            "advance": Label(
+                (
+                    "The candidate meets all required years and the first interview was strong.",
+                    "The portfolio matches the role and the availability date is confirmed.",
+                    "The referral says the candidate has led similar projects.",
+                    "The technical test is above the bar and the salary expectation fits.",
+                    "The candidate has the required certification and clear motivation.",
+                ),
+                ("Move to interview",),
+            ),
+            "hold": Label(
+                (
+                    "The application is promising but the availability date is unclear.",
+                    "The resume is strong but the salary expectation is above the band.",
+                    "The candidate has the skills but the interview schedule is not set.",
+                    "The profile is interesting but the required language level is not proven.",
+                    "The application needs a portfolio review before a decision.",
+                ),
+                ("Keep warm",),
+            ),
+            "reject": Label(
+                (
+                    "The candidate has no experience with the required technology.",
+                    "The application is for a different location with no relocation plan.",
+                    "The required certification is missing and cannot be obtained before the start date.",
+                    "The interview showed a clear mismatch with the role responsibilities.",
+                    "The candidate withdrew from the process.",
+                ),
+                ("Decline",),
+            ),
+            "request more information": Label(
+                (
+                    "The resume does not show the dates of the last two roles.",
+                    "The application lacks links to the portfolio.",
+                    "The candidate did not answer the screening questions.",
+                    "The employment history has an unexplained gap.",
+                    "The references are missing.",
+                ),
+                ("Ask for documents",),
+            ),
+        },
+    ),
+    UseCase(
+        name="azione_email_it",
+        title="Azione email (italiano)",
+        language="it",
+        questions=(
+            "Cosa si deve fare con questa email?",
+            "Quale azione è più adatta per questo messaggio?",
+            "Decidi la prossima azione per questa email.",
+        ),
+        labels={
+            "reply now": Label(
+                (
+                    "Il cliente chiede una conferma urgente prima delle 18.",
+                    "Il fornitore ha inviato un preventivo con scadenza oggi.",
+                    "Il capo chiede una risposta immediata su un problema in produzione.",
+                    "Il candidato aspetta un feedback entro domani.",
+                    "Il messaggio contiene un errore di pagamento da correggere subito.",
+                ),
+                ("Rispondi subito",),
+            ),
+            "schedule meeting": Label(
+                (
+                    "Il cliente vuole una call per approfondire l'offerta.",
+                    "Il team deve discutere un progetto con più stakeholder.",
+                    "La trattativa richiede una riunione con il legale.",
+                    "Il manager propone un confronto sul piano del prossimo trimestre.",
+                    "Serve un workshop per chiarire i requisiti.",
+                ),
+                ("Fissa un appuntamento",),
+            ),
+            "archive": Label(
+                (
+                    "Il messaggio contiene solo un aggiornamento informativo.",
+                    "La newsletter non richiede alcuna azione.",
+                    "La comunicazione è già stata gestita da un collega.",
+                    "L'avviso di sistema non è rilevante per il destinatario.",
+                    "Il promemoria riguarda un evento già concluso.",
+                ),
+                ("Archivia",),
+            ),
+            "forward to a colleague": Label(
+                (
+                    "La richiesta riguarda la fatturazione e non il supporto tecnico.",
+                    "Il messaggio è destinato al team legale.",
+                    "Il cliente chiede informazioni commerciali.",
+                    "Il problema richiede l'intervento del responsabile sicurezza.",
+                    "La domanda è per il reparto risorse umane.",
+                ),
+                ("Inoltra",),
+            ),
+        },
+    ),
+    UseCase(
+        name="richiesta_assistenza_it",
+        title="Richiesta di assistenza (italiano)",
+        language="it",
+        questions=(
+            "Che tipo di richiesta è questa?",
+            "In quale coda deve finire questo ticket?",
+            "Classifica questa richiesta di assistenza.",
+        ),
+        labels={
+            "tecnico": Label(
+                (
+                    "L'applicazione si blocca durante l'accesso.",
+                    "Il server non risponde da stamattina.",
+                    "L'aggiornamento ha provocato un errore di configurazione.",
+                    "Non riesco a stampare dal portale.",
+                    "L'integrazione con il CRM restituisce un errore.",
+                ),
+                ("Supporto tecnico",),
+            ),
+            "amministrativo": Label(
+                (
+                    "Devo aggiornare la ragione sociale sull'account.",
+                    "Vorrei cambiare la modalità di pagamento.",
+                    "Serve una copia della fattura di marzo.",
+                    "Devo aggiungere un utente al contratto.",
+                    "Vorrei sapere quando scade il rinnovo.",
+                ),
+                ("Pratiche amministrative",),
+            ),
+            "commerciale": Label(
+                (
+                    "Vorrei un preventivo per ampliare le licenze.",
+                    "Chiedo informazioni sul piano enterprise.",
+                    "Vorrei una demo per il mio team.",
+                    "Qual è lo sconto per un rinnovo triennale?",
+                    "Vorrei confrontare due piani di abbonamento.",
+                ),
+                ("Ufficio vendite",),
+            ),
+            "reclamo": Label(
+                (
+                    "Il servizio non corrisponde a quanto promesso.",
+                    "Ho aspettato tre giorni senza risposta.",
+                    "L'addebito non è stato autorizzato.",
+                    "Il prodotto è arrivato danneggiato.",
+                    "Vorrei parlare con un responsabile.",
+                ),
+                ("Gestione reclami",),
+            ),
+        },
+    ),
+    UseCase(
+        name="urgenza_ticket_it",
+        title="Urgenza ticket (italiano)",
+        language="it",
+        questions=(
+            "Quale priorità ha questo ticket?",
+            "Quanto è urgente questo problema?",
+            "Assegna il livello di urgenza.",
+        ),
+        labels={
+            "P1": Label(
+                (
+                    "Il pagamento non funziona per nessun cliente.",
+                    "Il database principale non accetta scritture.",
+                    "I dati sensibili sono accessibili senza autenticazione.",
+                    "L'area riservata è fuori uso per tutti gli utenti.",
+                    "L'API critica restituisce errori da mezz'ora.",
+                ),
+                ("Critico",),
+            ),
+            "P2": Label(
+                (
+                    "Una parte dei pagamenti va in timeout.",
+                    "La ricerca è lentissima in una regione.",
+                    "L'export notturno è fallito.",
+                    "Le notifiche arrivano con mezz'ora di ritardo.",
+                    "Un ambiente di produzione è degradato.",
+                ),
+                ("Alto",),
+            ),
+            "P3": Label(
+                (
+                    "Un report mostra una colonna fuori posto.",
+                    "Una pagina admin è lenta ma funziona.",
+                    "Alcuni utenti vedono un fuso orario errato.",
+                    "Un avviso viene inviato due volte.",
+                    "Un endpoint secondario restituisce un codice errato.",
+                ),
+                ("Medio",),
+            ),
+            "P4": Label(
+                (
+                    "C'è un refuso nel piè di pagina.",
+                    "Va rinominato un pulsante.",
+                    "Il tema scuro ha una tonalità leggermente diversa.",
+                    "Manca una scorciatoia da tastiera.",
+                    "Un log deprecato è rumoroso ma innocuo.",
+                ),
+                ("Basso",),
+            ),
+        },
+    ),
     # --- held out: never seen in training, used for the OOD split ---
+    UseCase(
+        name="contract_review",
+        title="Contract review",
+        held_out=True,
+        questions=("What should the reviewer do with this contract?", "Decide on this contract."),
+        labels={
+            "approve": Label(
+                (
+                    "The contract matches the approved template and the supplier accepted the standard terms.",
+                    "The renewal keeps the same price and service level.",
+                    "The NDA uses the company's standard clauses.",
+                    "The statement of work is within the approved budget and scope.",
+                    "The amendment only changes the billing address.",
+                ),
+                ("Sign",),
+            ),
+            "flag clause": Label(
+                (
+                    "The contract has unlimited liability for data loss.",
+                    "The renewal includes an automatic price increase.",
+                    "The supplier wants to own the deliverables created by the company.",
+                    "The termination notice period is shorter than policy allows.",
+                    "The governing law is outside the approved jurisdiction.",
+                ),
+                ("Mark for revision",),
+            ),
+            "escalate": Label(
+                (
+                    "The contract requires a security commitment the company cannot meet.",
+                    "The supplier refuses the audit clause for a regulated customer.",
+                    "The contract includes a non-compete affecting other clients.",
+                    "The customer requests a bespoke indemnity for a public sector deal.",
+                    "The deal has a liability cap above the delegated authority.",
+                ),
+                ("Send to legal",),
+            ),
+        },
+    ),
+    UseCase(
+        name="approvazione_spese_it",
+        title="Approvazione spese (italiano)",
+        language="it",
+        held_out=True,
+        questions=("Come va gestita questa nota spese?", "Decidi sulla richiesta di rimborso."),
+        labels={
+            "approva": Label(
+                (
+                    "La spesa è entro budget e ha ricevuta valida.",
+                    "Il viaggio era approvato prima della partenza.",
+                    "La formazione rientra nel piano annuale.",
+                    "Il materiale è necessario per un progetto già approvato.",
+                    "L'importo è inferiore alla soglia del responsabile.",
+                ),
+                ("Rimborsa",),
+            ),
+            "rifiuta": Label(
+                (
+                    "La spesa non ha alcun documento di supporto.",
+                    "Il ristorante supera il limite di policy.",
+                    "L'acquisto è stato fatto senza autorizzazione.",
+                    "La spesa è duplicata.",
+                    "Il bene non è pertinente al lavoro.",
+                ),
+                ("Non rimborsare",),
+            ),
+            "chiedi informazioni": Label(
+                (
+                    "La ricevuta è illeggibile.",
+                    "Il centro di costo non è indicato.",
+                    "Il motivo del viaggio non è specificato.",
+                    "La fattura è intestata a un'altra società.",
+                    "Manca la data della spesa.",
+                ),
+                ("Chiedi chiarimenti",),
+            ),
+        },
+    ),
+    # --- older held out: never seen in training, used for the OOD split ---
     UseCase(
         name="pr_review",
         title="Pull request review",

@@ -77,13 +77,16 @@ class ANTPredictor:
     def save(self, path: str | Path) -> Path:
         path = self.model.save_head(path)
         if not isinstance(self.calibrator, IdentityCalibrator):
+            calibrator_file = path / "calibrator.pt"
+            temporary = calibrator_file.with_suffix(calibrator_file.suffix + ".tmp")
             torch.save(
                 {
                     "name": getattr(self.calibrator, "name", "custom"),
                     "state_dict": self.calibrator.state_dict(),
                 },
-                path / "calibrator.pt",
+                temporary,
             )
+            temporary.replace(calibrator_file)
         if not isinstance(self.escalation, AlwaysExecute):
             (path / "escalation.json").write_text(
                 json.dumps(self.escalation.to_config(), indent=2) + "\n"
@@ -101,6 +104,46 @@ class ANTPredictor:
             candidates, batch_size=self.model.config.encode_batch_size
         )
 
+    def _encode_context_and_candidates(
+        self, state: str, question: str, candidates: Sequence[str]
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        """Return (z_context [1, d], z_candidates [N, d]) in input order with as
+        few backbone passes as possible.
+
+        A fully warm cache still costs one context pass, but a partial miss makes
+        the fused encode cheaper than a context pass plus a candidate encode: one
+        stream over the frozen weights instead of two. Fresh rows are written
+        back so the next call can hit the cache completely.
+        """
+        cache = self.candidate_cache
+        if cache is not None and all(cache.contains(candidate) for candidate in candidates):
+            return self.model.encode_contexts([state], [question]), self._candidate_embeddings(
+                candidates
+            )
+
+        unique = list(dict.fromkeys(candidates))
+        z_context, z_unique = self.model.encode_state_and_candidates(state, question, unique)
+        if cache is not None:
+            self._remember_candidate_embeddings(unique, z_unique)
+        lookup = {candidate: index for index, candidate in enumerate(unique)}
+        order = torch.tensor(
+            [lookup[candidate] for candidate in candidates], device=z_unique.device
+        )
+        return z_context, z_unique[order]
+
+    def _remember_candidate_embeddings(
+        self, candidates: Sequence[str], embeddings: torch.Tensor
+    ) -> None:
+        """Write fused candidate rows back into the embedding cache."""
+        cache = self.candidate_cache
+        if cache is None:
+            return
+        # Predictions run under inference_mode(); a plain copy keeps cached rows
+        # usable later in autograd-enabled code, like encode_candidates' detach.
+        with torch.inference_mode(False):
+            stored = embeddings.detach().clone()
+        cache.store(candidates, stored)
+
     def _probabilities(self, scores: torch.Tensor) -> np.ndarray:
         logits = self.calibrator(scores).float().detach() / self.temperature
         return torch.softmax(logits, dim=-1).cpu().numpy()
@@ -109,8 +152,9 @@ class ANTPredictor:
         self, state: str, question: str, candidates: Sequence[str]
     ) -> np.ndarray:
         """Raw (uncalibrated) scores in input order."""
-        scores = self.model.score_candidates(state, question, candidates)
-        return scores.detach().float().cpu().numpy()
+        with torch.inference_mode():
+            scores = self.model.score_candidates(state, question, candidates)
+            return scores.detach().float().cpu().numpy()
 
     # -- prediction ----------------------------------------------------------
 
@@ -153,13 +197,14 @@ class ANTPredictor:
         candidates = list(candidates)
         if not candidates:
             raise ValueError("at least one candidate is required")
-        z_context = self.model.encode_contexts([state], [question])
-        z_candidates = self._candidate_embeddings(candidates)
-        scores = self.model.score_embeddings(z_context, z_candidates.unsqueeze(0))[0]
-        probabilities = self._probabilities(scores)
-        return self._result_from_probs(
-            probabilities, candidates, scores=scores.detach().float().cpu().numpy()
-        )
+        with torch.inference_mode():
+            z_context, z_candidates = self._encode_context_and_candidates(
+                state, question, candidates
+            )
+            scores = self.model.score_embeddings(z_context, z_candidates.unsqueeze(0))[0]
+            probabilities = self._probabilities(scores)
+            raw_scores = scores.detach().float().cpu().numpy()
+        return self._result_from_probs(probabilities, candidates, scores=raw_scores)
 
     def predict_batch(
         self,
@@ -177,22 +222,23 @@ class ANTPredictor:
         ]
         results: list[PredictionResult] = []
         batch = self.model.config.encode_batch_size
-        for start in range(0, len(states), batch):
-            chunk = range(start, min(start + batch, len(states)))
-            z_context = self.model.encode_contexts(
-                [states[i] for i in chunk], [questions[i] for i in chunk]
-            )
-            for i in chunk:
-                z_candidates = self._candidate_embeddings(rows[i])
-                scores = self.model.score_embeddings(
-                    z_context[i - start].unsqueeze(0), z_candidates.unsqueeze(0)
-                )[0]
-                probabilities = self._probabilities(scores)
-                results.append(
-                    self._result_from_probs(
-                        probabilities,
-                        rows[i],
-                        scores=scores.detach().float().cpu().numpy(),
-                    )
+        with torch.inference_mode():
+            for start in range(0, len(states), batch):
+                chunk = range(start, min(start + batch, len(states)))
+                z_context = self.model.encode_contexts(
+                    [states[i] for i in chunk], [questions[i] for i in chunk]
                 )
+                for i in chunk:
+                    z_candidates = self._candidate_embeddings(rows[i])
+                    scores = self.model.score_embeddings(
+                        z_context[i - start].unsqueeze(0), z_candidates.unsqueeze(0)
+                    )[0]
+                    probabilities = self._probabilities(scores)
+                    results.append(
+                        self._result_from_probs(
+                            probabilities,
+                            rows[i],
+                            scores=scores.detach().float().cpu().numpy(),
+                        )
+                    )
         return results

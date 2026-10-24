@@ -36,14 +36,23 @@ def supports_bf16(device: torch.device) -> bool:
 
 
 def resolve_dtype(dtype: str | torch.dtype | None, device: torch.device) -> torch.dtype:
-    """BF16 on Ampere+ CUDA, FP16 on older CUDA (e.g. T4), FP32 elsewhere by default
-    (linear-attention ops are not reliably BF16 on MPS/CPU and a 4B model in FP32
-    on CUDA is wasteful)."""
+    """Default floating-point type per device when the caller passes ``auto``.
+
+    CUDA uses BF16 on Ampere+ and FP16 on older cards (e.g. T4). MPS uses FP16:
+    the frozen 4B backbone is ~9.3 GB of weights in FP16 but ~18.6 GB in FP32,
+    which cannot fit in the unified memory of an Apple Silicon machine, so FP32
+    is not a usable default there. CPU stays FP32 because half-precision CPU
+    kernels are slow and incomplete. Precision-sensitive parts (the scoring
+    head, calibration) are cast to FP32 separately, so the backbone dtype does
+    not degrade their numerics.
+    """
     if isinstance(dtype, torch.dtype):
         return dtype
     if dtype in (None, "auto"):
         if device.type == "cuda":
             return torch.bfloat16 if supports_bf16(device) else torch.float16
+        if device.type == "mps":
+            return torch.float16
         return torch.float32
     key = str(dtype).lower()
     if key not in _DTYPE_ALIASES:
@@ -55,6 +64,35 @@ def set_seed(seed: int) -> None:
     random.seed(seed)
     np.random.seed(seed % (2**32))
     torch.manual_seed(seed)
+
+
+def bucket_max_length(
+    lengths: Sequence[int], buckets: Sequence[int] = (64, 128, 256, 512, 1024)
+) -> int:
+    """Round the longest input in a batch up to a fixed padded-length bucket.
+
+    MPS compiles Metal kernels per tensor shape, so a serving workload where every
+    request has a slightly different context length pays a compilation cost on
+    nearly every call. Measured on an M3 with a small Qwen3.5 text model, the first
+    call at an unseen length costs 10-200 ms more than a repeat at the same length.
+    Collapsing requests onto a handful of padded widths keeps the graphs hot.
+
+    This only accepts real token counts: paddings and truncation caps are not
+    interchangeable here. Rounding a cap (e.g. ``max_context_tokens``) down would
+    truncate longer inputs, so callers must apply it after tokenization.
+
+    Returns the smallest bucket >= max(lengths), or max(lengths) itself when it
+    exceeds every bucket (never truncates).
+    """
+    if not lengths:
+        raise ValueError("at least one length is required")
+    longest = max(int(length) for length in lengths)
+    if longest <= 0:
+        raise ValueError("lengths must be positive")
+    for bucket in sorted(int(bucket) for bucket in buckets):
+        if bucket >= longest:
+            return bucket
+    return longest
 
 
 def chunked(iterable: Iterable[T], size: int) -> Iterator[list[T]]:

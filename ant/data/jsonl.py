@@ -62,6 +62,11 @@ def load_jsonl(path: str | Path) -> list[DecisionExample]:
                 continue
             try:
                 row = json.loads(line)
+                candidates = tuple(row["candidates"])
+                if len(candidates) < 2:
+                    raise ValueError("candidates must contain at least two options")
+                if row["correct"] not in candidates:
+                    raise ValueError("correct must be one of candidates")
                 extra = {
                     key: value
                     for key, value in row.items()
@@ -71,7 +76,7 @@ def load_jsonl(path: str | Path) -> list[DecisionExample]:
                     DecisionExample(
                         state=row["state"],
                         question=row["question"],
-                        candidates=tuple(row["candidates"]),
+                        candidates=candidates,
                         correct=row["correct"],
                         metadata=extra or None,
                     )

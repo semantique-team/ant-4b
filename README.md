@@ -1,5 +1,9 @@
 # ANT-4B — Adaptive Neural Triage
 
+> The lightweight `Qwen3.5-0.8B` variant lives in the sibling repository `ant-08b`; this
+> repository is the 4B reference. Both use MLX for local Apple Silicon serving and Colab for
+> real-backbone training.
+
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.2%2B-EE4C2C?logo=pytorch&logoColor=white)](https://pytorch.org/)
 [![Qwen](https://img.shields.io/badge/Backbone-Qwen3.5--4B-6E46AE)](https://huggingface.co/Qwen/Qwen3.5-4B)
@@ -80,7 +84,8 @@ pip install -e ".[dev]"
 ```
 
 - Runtime: `torch`, `transformers>=4.57` (native `qwen3_5` support), `numpy`
-- Extras: `train` (PEFT/LoRA, accelerate), `hub` (HF CLI + fast transfers), `viz` (matplotlib)
+- Extras: `train` (PEFT/LoRA, accelerate), `hub` (HF CLI + fast transfers), `viz` (matplotlib),
+  `mlx` (Apple Silicon MLX inference backend + MLX quantization), `metal` (Apple Silicon 8-bit quantization)
 
 ## Download the model from Hugging Face — step by step
 
@@ -124,9 +129,91 @@ Notes:
 | Setup | Feasibility |
 |---|---|
 | CUDA GPU ≥ 16 GB | recommended; BF16 weights ~9.4 GB + head + activations |
-| Apple Silicon 32 GB | works (MPS, `torch_dtype="bfloat16"`, small batches) |
-| Apple Silicon 16 GB | marginal — BF16 fits but headroom is tight |
+| Apple Silicon 32 GB | works (MPS, FP16, small batches) |
+| Apple Silicon 16 GB | works with FP16: 8.4 GB resident, batch 1 |
 | CPU only | not recommended for the 4B backbone; use the mock backbone for development |
+
+MPS has no native BF16, so PyTorch emulates it and the forward pass runs several times slower than
+FP16 with identical numerics: on the real backbone, FP16 and BF16 plain runs agree to 6 decimal
+places on the mean absolute hidden state and both stay NaN-free. `resolve_dtype("auto", mps)`
+therefore returns FP16, and the quantized load path passes the dtype through explicitly — without
+that the checkpoint's own BF16 declaration wins.
+
+### Inference latency, Apple Silicon (FP16, batch 1)
+
+Warm `backbone.encode` on an M3 / 16 GB, after the improvements below:
+
+| tokens | warm encode |
+|---|---|
+| 14 | 0.37 s |
+| 53 | 0.37 s |
+| 210 | 1.4 s |
+| 418 | 2.9 s |
+
+versus ~13 s per prediction on the unmodified path. What made the difference: one fused backbone
+pass for the context and every candidate (verified `max |Δp| = 0.0` against the two-pass path),
+`torch.inference_mode()` on all inference entries, and length bucketing (64/128/256/512/1024) so
+MPS reuses its compiled kernels instead of recompiling per distinct shape. A first `predict` after
+load still pays ~1.7 s of first-touch compilation for the template shapes. Long inputs remain
+bounded by the 24 GatedDeltaNet layers running the reference PyTorch path — CUDA/Triton-only fused
+kernels — so quantization-style memory fixes cannot remove that floor.
+
+### 8-bit Metal quantization — NOT usable on this stack yet
+
+Transformers 5.17 ships a native MPS quantizer (`quantization="metal"`, `quantization_bits=8`,
+`quantization_group_size=64`, gated by the `metal` extra). The config plumbing, unit tests and the
+accuracy gate are all in place and green, but **the quantizer itself is numerically broken on the
+real model with this stack** (transformers 5.17.0, kernels 0.16.2, current PyTorch MPS):
+
+- FP16 + 8 bits on the 4B backbone: every hidden state is exactly **zero** (5.08 GB resident).
+- BF16 + 8 bits: hidden states are **NaN** (3.80 GB resident).
+- FP16 / BF16 without quantization: sane, and equal to each other.
+- An identical tiny locally-built Qwen3.5 TextModel quantizes **correctly** (max hidden delta 0.05
+  vs FP16), including a BF16-on-disk / FP16-requested dtype cast — so this is not our loading code;
+  it is size/shape-specific behavior of the pinned kernel.
+- transformers pins `kernels-community/mlx-quantization-metal-kernels` **version 1** (version 2
+  exists but is ignored by this release). Re-loading a `save_pretrained()`-saved quantized
+  checkpoint additionally **segfaults** in PyTorch's MPS copy kernel, with or without
+  `device_map="mps"`.
+
+`scripts/compare_quantization.py` is the gate that caught this — reference FP16 scored accuracy
+0.725 / ECE 0.155 on 40 test rows while the quantized arm collapsed to 0.325 with NaN deltas, so
+the gate failed at Δaccuracy = 0.4 exactly as designed. `models/Qwen3.5-4B-metal-8bit/` contains
+the resulting packed `U32` checkpoint: valid bytes, not loadable on this stack — keep for a future
+fixed transformers release or delete it. Defaults keep `quantization=None`; when a fixed release
+lands, re-run the gate before trusting any quantized numbers.
+
+### MLX backend and MLX quantization (Apple Silicon)
+
+`backbone_backend="mlx"` runs the frozen Qwen encoder through Apple's `mlx-lm` and keeps the
+existing torch ANT head/checkpoint format. This is the recommended local path for the hybrid
+GatedDeltaNet layers, which fall back to a slow reference implementation under PyTorch MPS.
+
+```bash
+pip install -e ".[mlx]"
+
+# Convert an HF checkpoint to MLX; use --bits 8 (conservative) or --bits 4 (lighter).
+python scripts/mlx_convert.py --hf-path models/Qwen3.5-4B \
+  --mlx-path models/Qwen3.5-4B-mlx-8bit --bits 8 --group-size 64
+```
+
+```python
+ant = ANTPredictor.from_config(
+    ANTConfig(
+        backbone_model="models/Qwen3.5-4B-mlx-8bit",
+        backbone_backend="mlx",
+        quantization="mlx",
+        quantization_bits=8,
+        quantization_group_size=64,
+    )
+)
+```
+
+The MLX backend is an **inference** backend: train heads with `--device cuda` on Colab, then
+profile the returned checkpoint locally. `quantization="mlx"` accepts only an already-converted
+MLX checkpoint whose embedded bits/group size match the request; it never silently requantizes
+weights. Always compare accuracy, ECE and argmax flips against an unquantized MLX arm through
+`scripts/compare_quantization.py` before shipping a quantized model.
 
 ## Quickstart
 
@@ -165,14 +252,18 @@ web application runtime.
 
 ## Training (mode 1: frozen Qwen + trainable head)
 
+Training is a cloud workflow: do not run the real-backbone training loop locally. Use the
+Colab guide for the 0.8B variant or a CUDA box for 4B, then bring back only the small head
+checkpoint and profile it locally with MLX.
+
 ```bash
 # CPU end-to-end sanity run on the mock backbone (~seconds)
 python scripts/train.py --backbone mock --out runs/mock-dot
 
-# Real backbone
+# Real backbone (CUDA/Colab)
 python scripts/train.py --backbone models/Qwen3.5-4B --device cuda --out runs/qwen-dot
 
-# LoRA mode (requires ant-4b[train])
+# LoRA mode (requires ant-4b[train], CUDA/Colab)
 python scripts/train.py --backbone models/Qwen3.5-4B --mode lora --device cuda --out runs/qwen-lora
 ```
 
@@ -199,6 +290,10 @@ python scripts/train.py --backbone models/Qwen3.5-4B --device cuda \
 
 `metrics.json` reports test and OOD accuracy per use case; `card.json` and
 `examples.json` (real held-out rows) are what the playground shows.
+
+For cloud training of a separate **Qwen3.5-0.8B** variant, see the
+[Kaggle guide](docs/training/train-08b-on-kaggle.md) or
+[Colab guide](docs/training/train-08b-on-colab.md).
 
 Training uses `L = CrossEntropy(scores, correct_candidate)` on the synthetic multilingual
 benchmark, fits a temperature calibrator and a risk-coverage escalation policy on the validation
@@ -261,7 +356,7 @@ numbers say anything about real-backbone accuracy. Results land in the log first
 ## Tests
 
 ```bash
-pytest tests/ -q                 # 95 tests, no download needed (mock backbone)
+pytest tests/ -q                 # 117 tests, no download needed (mock backbone)
 ANT_TEST_QWEN=models/Qwen3.5-4B pytest tests/test_qwen_integration.py -m integration
 ```
 

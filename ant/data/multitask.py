@@ -88,6 +88,8 @@ def build_multitask(
 ) -> list[TaggedExample]:
     """Expand the seed situations into tagged examples across the four splits."""
     variants = {"train": 24, "val": 8, "test": 8, "ood": 8, **(variants or {})}
+    if any(count <= 0 for count in variants.values()):
+        raise ValueError(f"variant counts must be positive, got {variants}")
     rng = random.Random(seed)
     rows: list[TaggedExample] = []
     for use_case in use_cases:

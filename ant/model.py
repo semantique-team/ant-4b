@@ -9,11 +9,50 @@ from typing import Sequence
 import torch
 from torch import nn
 
+from ant.backbone.base import BackboneOutput
 from ant.config import ANTConfig
 from ant.scoring import build_scorer
 from ant.types import DecisionExample
 
 MASK_SCORE = -1.0e9
+
+
+def _build_default_backbone(config: ANTConfig) -> nn.Module:
+    """Construct the frozen encoder described by ``config``.
+
+    Shared by ``ANTModel.__init__`` and ``ANTModel.load`` so a checkpoint that
+    recorded quantization settings is re-created with the same backbone rather
+    than silently loading 9.3 GB of fp16 weights.
+    """
+    if config.backbone_model == "mock":
+        from ant.backbone.mock import MockBackbone
+
+        return MockBackbone(hidden_size=config.scoring_dim * 2)
+    if config.backbone_backend == "mlx":
+        from ant.backbone.mlx import MlxBackbone
+
+        return MlxBackbone(
+            config.backbone_model,
+            torch_dtype=config.torch_dtype,
+            device=config.device,
+            max_length=config.max_context_tokens,
+            quantization=config.quantization,
+            quantization_bits=config.quantization_bits,
+            quantization_group_size=config.quantization_group_size,
+        )
+    from ant.backbone.qwen import QwenBackbone
+
+    return QwenBackbone(
+        config.backbone_model,
+        torch_dtype=config.torch_dtype,
+        device=config.device,
+        max_length=config.max_context_tokens,
+        attn_implementation=config.attn_implementation,
+        quantization=config.quantization,
+        quantization_bits=config.quantization_bits,
+        quantization_group_size=config.quantization_group_size,
+        linear_attention_chunk_size=config.linear_attention_chunk_size,
+    )
 
 
 class ANTModel(nn.Module):
@@ -26,15 +65,7 @@ class ANTModel(nn.Module):
     def __init__(self, config: ANTConfig, *, backbone: nn.Module | None = None) -> None:
         super().__init__()
         if backbone is None:
-            from ant.backbone.qwen import QwenBackbone
-
-            backbone = QwenBackbone(
-                config.backbone_model,
-                torch_dtype=config.torch_dtype,
-                device=config.device,
-                max_length=config.max_context_tokens,
-                attn_implementation=config.attn_implementation,
-            )
+            backbone = _build_default_backbone(config)
         self.config = config
         self.backbone = backbone
 
@@ -106,6 +137,60 @@ class ANTModel(nn.Module):
 
     def score_embeddings(self, z_context: torch.Tensor, z_candidates: torch.Tensor) -> torch.Tensor:
         return self.scorer(z_context, z_candidates)
+
+    def encode_state_and_candidates(
+        self, state: str, question: str, candidates: Sequence[str]
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        """One backbone pass for the context and every candidate.
+
+        Returns (z_context [1, d], z_candidates [N, d]). Both encoders share the
+        backbone, so batching them together removes a whole pass over the frozen
+        weights — the dominant cost on memory-bound devices.
+
+        One cap governs the whole batch, so candidates are truncated at
+        ``max_context_tokens`` rather than ``max_candidate_tokens``. That only
+        matters for candidates longer than 128 tokens, which the head never saw
+        in training; contexts are unaffected because they are the longest row.
+        """
+        if not candidates:
+            raise ValueError("at least one candidate is required")
+        context_text = self.context_encoder.format(state, question)
+        candidate_texts = [self.candidate_encoder.format(candidate) for candidate in candidates]
+        output = self.backbone.encode(
+            [context_text, *candidate_texts],
+            batch_size=len(candidate_texts) + 1,
+            max_length=self.config.max_context_tokens,
+        )
+        # Right padding plus causal attention means the fused batch does not
+        # change any real token: pad slots are masked out of attention, and the
+        # decoder numbers positions 0..n-1 from the left, so a shorter row keeps
+        # its own positions regardless of how wide the batch is padded. Widening
+        # to the longest text only reorders floating-point accumulation.
+        context_output = BackboneOutput(
+            hidden_states=output.hidden_states[:1],
+            attention_mask=output.attention_mask[:1],
+        )
+        candidate_output = BackboneOutput(
+            hidden_states=output.hidden_states[1:],
+            attention_mask=output.attention_mask[1:],
+        )
+
+        # mirror ContextEncoder.forward / CandidateEncoder.forward exactly
+        z_context = self.context_encoder.dropout(
+            self.context_encoder.projection(
+                self.context_encoder.input_norm(
+                    self.context_encoder.pool_hidden(context_output).float()
+                )
+            )
+        )
+        z_candidates = self.candidate_encoder.dropout(
+            self.candidate_encoder.projection(
+                self.candidate_encoder.input_norm(
+                    self.candidate_encoder.pool_hidden(candidate_output).float()
+                )
+            )
+        )
+        return z_context.float(), z_candidates.float()
 
     def forward(
         self,
@@ -189,10 +274,16 @@ class ANTModel(nn.Module):
         if self.config.backbone_model == "mock":
             # a mock backbone has no Hub checkpoint to reload from, so persist it
             blob["mock_backbone_state"] = self.backbone.state_dict()
-        torch.save(blob, path / "ant_head.pt")
+        self._save_blob(blob, path / "ant_head.pt")
         self.config.save(path / "config.json")
         self._maybe_save_lora(path)
         return path
+
+    def _save_blob(self, blob: dict, destination: Path) -> None:
+        # Atomic write: a Colab disconnect must not leave a truncated head file.
+        temporary = destination.with_suffix(destination.suffix + ".tmp")
+        torch.save(blob, temporary)
+        temporary.replace(destination)
 
     def _maybe_save_lora(self, path: Path) -> None:
         inner = getattr(self.backbone, "model", None)
@@ -210,12 +301,23 @@ class ANTModel(nn.Module):
         backbone: nn.Module | None = None,
         map_location: str | torch.device = "cpu",
         device: str = "auto",
+        quantization: str | None = None,
     ) -> "ANTModel":
         """Load a head checkpoint. ``device`` is where it runs now: the device saved in
-        the checkpoint is where it was *trained* (e.g. cuda on Colab) and is ignored."""
+        the checkpoint is where it was *trained* (e.g. cuda on Colab) and is ignored.
+
+        ``quantization`` overrides the value recorded in the checkpoint, so an
+        existing fp16 checkpoint can be benchmarked at 8 bits without editing
+        ``config.json``.
+        """
         path = Path(path)
         blob = torch.load(path / "ant_head.pt", map_location=map_location, weights_only=False)
-        config = replace(ANTConfig.from_dict(blob["config"]), device=device)
+        saved = ANTConfig.from_dict(blob["config"])
+        config = replace(
+            saved,
+            device=device,
+            quantization=quantization or saved.quantization,
+        )
         if backbone is None:
             if config.backbone_model == "mock":
                 from ant.backbone.mock import MockBackbone
@@ -224,15 +326,7 @@ class ANTModel(nn.Module):
                 if "mock_backbone_state" in blob:
                     backbone.load_state_dict(blob["mock_backbone_state"])
             else:
-                from ant.backbone.qwen import QwenBackbone
-
-                backbone = QwenBackbone(
-                    config.backbone_model,
-                    torch_dtype=config.torch_dtype,
-                    device=config.device,
-                    max_length=config.max_context_tokens,
-                    attn_implementation=config.attn_implementation,
-                )
+                backbone = _build_default_backbone(config)
         model = cls(config, backbone=backbone)
         model.load_head_state_dict(blob["state_dict"])
         model._maybe_load_lora(path)

@@ -12,6 +12,9 @@ DEFAULT_BASE_BACKBONE = "Qwen/Qwen3.5-4B-Base"
 
 _POOLING_STRATEGIES = ("mean", "last_token", "max", "attention")
 _SCORERS = ("dot", "cosine", "bilinear", "mlp")
+_QUANTIZATIONS = (None, "metal", "mlx")
+_QUANTIZATION_BITS = (2, 4, 8)
+_BACKENDS = ("torch", "mlx")
 
 
 @dataclass
@@ -20,9 +23,20 @@ class ANTConfig:
     checkpoint at load time and never hard-coded here."""
 
     backbone_model: str = DEFAULT_BACKBONE
+    backbone_backend: str = "torch"  # torch|mlx
     torch_dtype: str = "auto"  # auto|bfloat16|float16|float32
     device: str = "auto"  # auto|cuda|mps|cpu|index
     attn_implementation: str | None = None
+
+    # Backbone weight quantization. "metal" uses the native transformers Metal
+    # quantizer on MPS, which fuses dequantization into the matmul so the frozen
+    # 4B backbone stays resident in unified memory instead of spilling to swap.
+    quantization: str | None = None  # None or "metal"
+    quantization_bits: int = 8  # 2, 4 or 8
+    quantization_group_size: int = 64  # positive
+    # Chunk width of the pure-PyTorch GatedDeltaNet fallback. None keeps the
+    # transformers default (64); larger chunks cut Python loop overhead.
+    linear_attention_chunk_size: int | None = None  # None = transformers default (64)
 
     max_context_tokens: int = 1024
     max_candidate_tokens: int = 128
@@ -50,6 +64,32 @@ class ANTConfig:
             raise ValueError("scoring_dim must be positive")
         if self.temperature <= 0:
             raise ValueError("temperature must be positive")
+        if self.backbone_backend not in _BACKENDS:
+            raise ValueError(
+                f"backbone_backend must be one of {_BACKENDS}, got {self.backbone_backend!r}"
+            )
+        if self.quantization not in _QUANTIZATIONS:
+            raise ValueError(
+                f"quantization must be one of {_QUANTIZATIONS}, got {self.quantization!r}"
+            )
+        if self.backbone_backend == "mlx" and self.quantization == "metal":
+            raise ValueError("quantization='metal' belongs to the torch backend; use 'mlx'")
+        if self.backbone_backend == "torch" and self.quantization == "mlx":
+            raise ValueError("quantization='mlx' requires backbone_backend='mlx'")
+        if self.quantization in ("metal", "mlx"):
+            if self.quantization_bits not in _QUANTIZATION_BITS:
+                raise ValueError(
+                    f"quantization_bits must be one of {_QUANTIZATION_BITS} when "
+                    f"quantization={self.quantization!r}, got {self.quantization_bits!r}"
+                )
+            if self.quantization_group_size <= 0:
+                raise ValueError("quantization_group_size must be positive")
+        if self.linear_attention_chunk_size is not None and (
+            not isinstance(self.linear_attention_chunk_size, int)
+            or isinstance(self.linear_attention_chunk_size, bool)
+            or self.linear_attention_chunk_size <= 0
+        ):
+            raise ValueError("linear_attention_chunk_size must be a positive int or None")
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)

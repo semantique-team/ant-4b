@@ -53,7 +53,10 @@ class TrainingReport:
         return asdict(self)
 
     def save(self, path: str | Path) -> None:
-        Path(path).write_text(json.dumps(self.to_dict(), indent=2) + "\n")
+        destination = Path(path)
+        temporary = destination.with_suffix(destination.suffix + ".tmp")
+        temporary.write_text(json.dumps(self.to_dict(), indent=2) + "\n")
+        temporary.replace(destination)
 
 
 class Trainer:
@@ -136,12 +139,13 @@ class Trainer:
                 optimizer.step()
                 scheduler.step()
                 step += 1
-                epoch_loss += float(loss) * len(batch.states)
+                epoch_loss += loss.detach().float().item() * len(batch.states)
                 epoch_examples += len(batch.states)
                 if cfg.log_every and step % cfg.log_every == 0:
                     components = " ".join(f"{k}={v:.4f}" for k, v in loss_output.components.items())
                     print(
-                        f"epoch {epoch} step {step}/{total_steps} loss {float(loss):.4f} "
+                        f"epoch {epoch} step {step}/{total_steps} "
+                        f"loss {loss.detach().float().item():.4f} "
                         f"{components} lr {scheduler.get_last_lr()[0]:.2e}"
                     )
 
@@ -188,7 +192,7 @@ class Trainer:
                 scores, mask = self.model(batch.states, batch.questions, batch.candidates)
                 labels = batch.labels.to(scores.device)
                 loss = nn.functional.cross_entropy(scores.float(), labels)
-                total_loss += float(loss) * len(batch.states)
+                total_loss += loss.detach().float().item() * len(batch.states)
                 correct += int((scores.argmax(dim=1) == labels).sum())
                 total += len(batch.states)
         return total_loss / max(1, total), correct / max(1, total)

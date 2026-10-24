@@ -5,6 +5,7 @@ from typing import Sequence
 import torch
 from torch import nn
 
+from ant.backbone.base import BackboneOutput
 from ant.encoding.pooling import build_pooling
 from ant.encoding.templates import DEFAULT_CANDIDATE_TEMPLATE
 
@@ -37,6 +38,12 @@ class CandidateEncoder(nn.Module):
     def format(self, candidate: str) -> str:
         return self.template.format(candidate=candidate.strip())
 
+    def pool_hidden(self, output: BackboneOutput) -> torch.Tensor:
+        """Mask-aware pooling over the backbone output, in float32 (as the context
+        encoder does) so the head stays fp32 under a fp16/bf16 backbone."""
+        hidden = output.hidden_states.to(torch.float32)
+        return self.pooling(hidden, output.attention_mask)
+
     def forward(
         self,
         candidates: Sequence[str],
@@ -46,8 +53,7 @@ class CandidateEncoder(nn.Module):
     ) -> torch.Tensor:
         texts = [self.format(candidate) for candidate in candidates]
         output = self.backbone.encode(texts, batch_size=batch_size, max_length=max_length)
-        hidden = output.hidden_states.to(torch.float32)
-        pooled = self.pooling(hidden, output.attention_mask)
+        pooled = self.pool_hidden(output)
         # the head stays fp32 under a fp16/bf16 backbone
         return self.dropout(self.projection(self.input_norm(pooled.float())))
 

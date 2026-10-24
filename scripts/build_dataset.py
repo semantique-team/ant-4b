@@ -21,9 +21,21 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out", default="data/ant-multitask")
     parser.add_argument("--seed", type=int, default=7)
+    parser.add_argument("--train-variants", type=int, default=24)
+    parser.add_argument("--val-variants", type=int, default=8)
+    parser.add_argument("--test-variants", type=int, default=8)
+    parser.add_argument("--ood-variants", type=int, default=8)
     args = parser.parse_args()
 
-    rows = build_multitask(seed=args.seed)
+    rows = build_multitask(
+        variants={
+            "train": args.train_variants,
+            "val": args.val_variants,
+            "test": args.test_variants,
+            "ood": args.ood_variants,
+        },
+        seed=args.seed,
+    )
     out = Path(args.out)
     manifest: dict[str, dict[str, int]] = {}
     for split in SPLITS:

@@ -19,6 +19,11 @@ dependencies = [
 [project.optional-dependencies]
 train = ["peft>=0.14", "accelerate>=1.0"]
 hub = ["huggingface_hub[cli]>=0.26", "hf_transfer"]
+# Apple Silicon only: native MLX inference backend and MLX quantized checkpoints.
+mlx = ["mlx>=0.29", "mlx-lm>=0.29"]
+# Apple Silicon only: fused Metal kernels behind transformers' MetalConfig quantizer.
+# Upper bound tracks transformers' own KERNELS_MAX_VERSION; it refuses newer releases.
+metal = ["kernels>=0.16.0,<0.17"]
 viz = ["pandas>=2.0", "matplotlib>=3.8"]
 dev = [
     "pytest>=8.0",

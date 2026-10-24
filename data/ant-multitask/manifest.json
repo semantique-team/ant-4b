@@ -15,7 +15,15 @@
     "it_helpdesk": 240,
     "agent_next_step": 192,
     "support_routing_it": 192,
-    "sentiment_it": 144
+    "sentiment_it": 144,
+    "meeting_action": 288,
+    "invoice_discrepancy": 288,
+    "data_privacy_request": 288,
+    "project_status": 288,
+    "candidate_screening": 288,
+    "azione_email_it": 288,
+    "richiesta_assistenza_it": 288,
+    "urgenza_ticket_it": 288
   },
   "val": {
     "support_routing": 48,
@@ -33,7 +41,15 @@
     "it_helpdesk": 24,
     "agent_next_step": 16,
     "support_routing_it": 16,
-    "sentiment_it": 16
+    "sentiment_it": 16,
+    "meeting_action": 32,
+    "invoice_discrepancy": 32,
+    "data_privacy_request": 32,
+    "project_status": 32,
+    "candidate_screening": 32,
+    "azione_email_it": 32,
+    "richiesta_assistenza_it": 32,
+    "urgenza_ticket_it": 32
   },
   "test": {
     "support_routing": 48,
@@ -51,9 +67,19 @@
     "it_helpdesk": 16,
     "agent_next_step": 16,
     "support_routing_it": 16,
-    "sentiment_it": 8
+    "sentiment_it": 8,
+    "meeting_action": 32,
+    "invoice_discrepancy": 32,
+    "data_privacy_request": 32,
+    "project_status": 32,
+    "candidate_screening": 32,
+    "azione_email_it": 32,
+    "richiesta_assistenza_it": 32,
+    "urgenza_ticket_it": 32
   },
   "ood": {
+    "contract_review": 120,
+    "approvazione_spese_it": 120,
     "pr_review": 72,
     "shipping_method": 72,
     "leave_request": 72

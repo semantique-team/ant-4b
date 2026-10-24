@@ -5,13 +5,14 @@ CPU end-to-end run:
 
 Real backbone on the multi-use-case dataset (python scripts/build_dataset.py):
     python scripts/train.py --backbone Qwen/Qwen3.5-4B --device cuda \\
-        --data data/ant-multitask --name "ANT multitask" --out runs/ant-multitask
+        --data data/ant-multitask --name "ANT multitask" --out runs/ant-4b
 """
 
 from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 
 import torch
@@ -47,6 +48,13 @@ def build_model(args) -> ANTModel:
     return ANTModel(config)
 
 
+def write_json(path: Path, payload: object) -> None:
+    """Atomic JSON write so a disconnected Colab session cannot leave a partial artifact."""
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    temporary.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n")
+    temporary.replace(path)
+
+
 def write_examples(path: Path, dataset: DecisionDataset, per_use_case: int) -> int:
     """Playground examples: the first ``per_use_case`` held-out rows of each use case."""
     taken: dict[str, int] = {}
@@ -57,7 +65,7 @@ def write_examples(path: Path, dataset: DecisionDataset, per_use_case: int) -> i
             continue
         taken[tag] = taken.get(tag, 0) + 1
         rows.append(example_to_row(example))
-    path.write_text(json.dumps(rows, indent=2, ensure_ascii=False) + "\n")
+    write_json(path, rows)
     return len(rows)
 
 
@@ -107,6 +115,15 @@ def main() -> int:
             "ood": synthetic.ood,
         }
     out_dir = Path(args.out or f"runs/{args.backbone.replace('/', '_')}-{args.scorer}")
+    out_dir.mkdir(parents=True, exist_ok=True)
+    write_json(
+        out_dir / "run_config.json",
+        {
+            "args": vars(args),
+            "python": sys.version.split()[0],
+            "torch": torch.__version__,
+        },
+    )
     trainer = Trainer(
         model,
         TrainingConfig(
@@ -158,11 +175,11 @@ def main() -> int:
         "best_val_loss": report.best_val_loss,
         "best_val_accuracy": report.best_val_accuracy,
     }
-    (out_dir / "metrics.json").write_text(json.dumps(metrics, indent=2) + "\n")
+    write_json(out_dir / "metrics.json", metrics)
 
     # playground metadata: a display name, and real held-out rows to try
     card = {"display_name": args.name or out_dir.name}
-    (out_dir / "card.json").write_text(json.dumps(card, indent=2) + "\n")
+    write_json(out_dir / "card.json", card)
     examples_source = datasets.get("test")
     if args.data and examples_source is not None:
         n = write_examples(out_dir / "examples.json", examples_source, args.examples_per_use_case)

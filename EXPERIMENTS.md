@@ -61,6 +61,13 @@ hardware, metrics, result, conclusion. Architecture changes are never made witho
 - **Result**: pipeline-level success; absolute numbers meaningless (mock backbone).
 - **Conclusion**: proceed to `Qwen3.5-4B` runs on a CUDA box; record those as E-1xx below.
 
+## Done
+
+- **2026-10-20 — Inference latency & Metal 8-bit quantization (lab report)**: full write-up in
+  [`docs/experiments/2026-10-20-inference-latency-and-metal-quantization.md`](docs/experiments/2026-10-20-inference-latency-and-metal-quantization.md)
+  — working config: fp16 plain + fused encode, ≈8× on short inputs; Metal 8-bit OFF (accuracy
+  gate FAIL, pre-quantized reload unusable on MPS).
+
 ---
 
 ## Planned experiments (templates to fill with real-backbone runs)
