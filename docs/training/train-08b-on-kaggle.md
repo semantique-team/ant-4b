@@ -52,8 +52,15 @@ from zipfile import ZipFile
 
 inputs = list(Path("/kaggle/input").glob("*"))
 print("Attached inputs:", inputs)
-archives = list(Path("/kaggle/input").rglob("ant-4b-kaggle.zip"))
-assert len(archives) == 1, f"Expected one source archive, found: {archives}"
+archives = sorted(Path("/kaggle/input").rglob("*.zip"))
+print("Zip files:", archives)
+candidates = [p for p in archives if "ant-4b" in p.name.lower() and "kaggle" in p.name.lower()]
+if not candidates:
+    raise FileNotFoundError(
+        "No ant-4b-kaggle.zip under /kaggle/input. Attach the ant-4b-source dataset "
+        "with Add Input, then restart the session."
+    )
+assert len(candidates) == 1, f"Expected one source archive, found: {candidates}"
 
 repo = Path("/kaggle/working/ant-4b")
 repo.mkdir(parents=True, exist_ok=True)
